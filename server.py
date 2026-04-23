@@ -1,8 +1,10 @@
 import os 
 import json
+from typing import Dict, List
 from mcp.server.fastmcp import FastMCP
 
 from agents.gemini_news_agent import analyze_constituency, batch_analyze
+from agents.political_model import analyze_political_signal
 
 mcp = FastMCP("Election Analyzer")
 
@@ -25,6 +27,17 @@ def get_batch_political_analysis(targets: List[Dict]) -> str:
     results = batch_analyze(targets)
 
     return json.dumps(results, indent=2)
+
+
+@mcp.tool()
+def get_political_risk_analysis(gemini_output:Dict) -> str:
+    """
+    Enriches the gemini sentiment data with politcal risk insights
+    Returns risk level, LOW/MODERATE/HIGH/CRITICAL and event severity score
+    """
+
+    result = analyze_political_signal(gemini_output)
+    return json.dumps(result, indent=2)
 
 if __name__ == "__main__":
     mcp.run(transport="stdio")
