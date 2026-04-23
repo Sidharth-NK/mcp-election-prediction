@@ -1,2 +1,4 @@
 .env
 mcp_venv/
+agents/.cache/
+__pycache__/
