@@ -112,6 +112,7 @@ from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, List, Optional
+import httpx
 from urllib.parse import unquote
 
 try:
@@ -181,12 +182,12 @@ class ConstituencyRecord:
 # CONFIGURATION
 # ══════════════════════════════════════════════════════════════
 
-HTML_FILES: Dict[str, str] = {
-    "Kerala":       "klae_2026.html",
-    "West Bengal":  "wbae_2026.html",
-    "Tamil Nadu":   "tnae_2026.html",
-    "Puducherry":   "plae_2026.html",
-    "Assam":        "alae_2026.html",
+WIKI_REST_URLS: Dict[str, str] = {
+    "Kerala":      "https://en.wikipedia.org/api/rest_v1/page/html/2026_Kerala_Legislative_Assembly_election",
+    "West Bengal": "https://en.wikipedia.org/api/rest_v1/page/html/2026_West_Bengal_Legislative_Assembly_election",
+    "Tamil Nadu":  "https://en.wikipedia.org/api/rest_v1/page/html/2026_Tamil_Nadu_Legislative_Assembly_election",
+    "Puducherry":  "https://en.wikipedia.org/api/rest_v1/page/html/2026_Puducherry_Legislative_Assembly_election",
+    "Assam":       "https://en.wikipedia.org/api/rest_v1/page/html/2026_Assam_Legislative_Assembly_election",
 }
 
 # State abbreviations used in entity_id generation
@@ -200,7 +201,10 @@ STATE_ABBR: Dict[str, str] = {
 
 WIKI_API    = "https://en.wikipedia.org/w/api.php"
 WIKI_BASE   = "https://en.wikipedia.org/wiki/"
-HEADERS     = {"User-Agent": "WikiAgent-PoliticalAnalysis/2.0 (Multi-Horizon Forecast System)"}
+HEADERS     = {
+    "User-Agent": "MCPElectionForecast/1.0 (https://github.com/Sidharth-NK/mcp-election-prediction; student-project) httpx/python",
+    "Accept":     "text/html; charset=utf-8",
+}
 
 
 # ══════════════════════════════════════════════════════════════
@@ -213,9 +217,11 @@ def _cell(cells: list, i: int) -> str:
 def _to_int(val: str) -> Optional[int]:
     return int(val) if str(val).isdigit() else None
 
-def _load_soup(path: Path) -> BeautifulSoup:
-    with open(path, encoding="utf-8") as f:
-        return BeautifulSoup(f, "html.parser")
+def _fetch_soup(url: str) -> BeautifulSoup:
+    """Live-fetch a Wikipedia page via the Wikimedia REST API."""
+    response = httpx.get(url, headers=HEADERS, timeout=30)
+    response.raise_for_status()
+    return BeautifulSoup(response.text, "html.parser")
 
 def _wikitables(soup: BeautifulSoup) -> list:
     return soup.find_all("table", class_="wikitable")
@@ -671,11 +677,9 @@ class WikiAgent:
     # ── Internal ──────────────────────────────────────────────
 
     def _extract_state(self, state: str) -> None:
-        path = self.html_dir / HTML_FILES[state]
-        if not path.exists():
-            raise FileNotFoundError(path)
-
-        soup   = _load_soup(path)
+        url  = WIKI_REST_URLS[state]
+        print(f"  Fetching: {url}")
+        soup   = _fetch_soup(url)
         parser = PARSERS[state]
         rows   = parser(soup)
         abbr   = STATE_ABBR[state]
