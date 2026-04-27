@@ -9,22 +9,22 @@ from agents.political_model import analyze_political_signal
 mcp = FastMCP("Election Analyzer")
 
 @mcp.tool()
-def get_election_sentiment(state: str, constituency: str) -> str:
+async def get_election_sentiment(state: str, constituency: str) -> str:
     """
     Fetch and analyze real-time political sentiment for a specific constituency.
     Return a JSON string containing sentiment_score, and key_headlines
     """
-    result = analyze_constituency(state, constituency)
+    result = await analyze_constituency(state, constituency)
 
     return json.dumps(result, indent=2)
 
 @mcp.tool()
-def get_batch_political_analysis(targets: List[Dict]) -> str:
+async def get_batch_political_analysis(targets: List[Dict]) -> str:
     """
     Fetch and analyze multiple constituencies efficiently.
     Returns a JSON string containing analysis for each targeted constituency.
     """
-    results = batch_analyze(targets)
+    results = await batch_analyze(targets)
 
     return json.dumps(results, indent=2)
 

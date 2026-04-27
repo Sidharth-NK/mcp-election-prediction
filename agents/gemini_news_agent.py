@@ -242,7 +242,7 @@ Base your analysis ONLY on the provided news data.
 # MAIN PUBLIC API
 # ============================================================
 
-def analyze_constituency(
+async def analyze_constituency(
     state: str,
     constituency: str,
     party: Optional[str] = None,
@@ -263,9 +263,7 @@ def analyze_constituency(
 
     # Search
     print(f"  > [{constituency}] Searching via Tavily...")
-    news = asyncio.run(
-        fetch_search_results_for_constituency(state, constituency, party, candidate)
-    )
+    news = await fetch_search_results_for_constituency(state, constituency, party, candidate)
 
     # Synthesize (single-item batch)
     print(f"  > [{constituency}] Synthesizing with Gemini...")
@@ -286,7 +284,7 @@ def analyze_constituency(
     return output
 
 
-def batch_analyze(targets: List[Dict]) -> List[Dict]:
+async def batch_analyze(targets: List[Dict]) -> List[Dict]:
     """
     Analyze multiple constituencies efficiently.
 
@@ -351,7 +349,7 @@ def batch_analyze(targets: List[Dict]) -> List[Dict]:
         state = batch[0]["state"]  # Now safely guaranteed to be identical for the whole batch
 
         print(f"\n[Batch {batch_num}/{len(batches)}] Searching {len(batch)} {state} constituencies in parallel...")
-        news_map = asyncio.run(fetch_search_results_for_batch(batch))
+        news_map = await fetch_search_results_for_batch(batch)
 
         print(f"[Batch {batch_num}/{len(batches)}] Synthesizing with 1 Gemini call...")
         results = synthesize_batch(news_map, state)

@@ -21,8 +21,17 @@ Status: Assigned to Co-Developer
 *   **[ ] Task:** Build an agent to fetch candidate history, past margins, and demographic baselines using Wiki APIs.
 
 ## Phase 3: MCP Orchestrator
-Status: In Progress
+Status: Completed (v3.1.0)
 
 *   **[x] Task:** Build `server.py` and wrap News Agent tools (Completed).
+*   **[x] Task:** Build `political_model.py` as a heuristic risk classifier (Completed).
+*   **[x] Task:** Test integrated pipeline in an MCP-compliant client (`test_client.py`) (Completed).
+*   **[ ] Upgrade:** Replace heuristic rules in `political_model.py` with a trained ML model (logistic regression or gradient boosting) once Wiki historical data is available from co-developer.
 *   **[ ] Task:** Add co-developer's Wiki Agent tools to the server once ready.
-*   **[ ] Task:** Test integrated pipeline in an MCP-compliant client.
+
+## Phase 4: TFT Forecasting Engine
+Status: Pending (requires Wiki data + Political Model upgrade)
+
+*   **[ ] Task:** Design feature fusion layer — align static (Wiki) + dynamic (Gemini + Political Model) data into a time-series format.
+*   **[ ] Task:** Train Temporal Fusion Transformer on historical election + sentiment features.
+*   **[ ] Task:** Output multi-horizon predictions (win probability, vote share trends).
