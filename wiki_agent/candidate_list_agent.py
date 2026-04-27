@@ -561,7 +561,7 @@ class WikiAgent:
         live_enrich:  bool = False,
         api_delay:    float = 1.0,
     ):
-        self.states      = states or list(HTML_FILES.keys())
+        self.states      = states or list(WIKI_REST_URLS.keys())
         self.html_dir    = Path(html_dir)
         self.live_enrich = live_enrich
         self.api_delay   = api_delay
