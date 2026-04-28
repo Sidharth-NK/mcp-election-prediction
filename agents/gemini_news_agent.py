@@ -45,7 +45,18 @@ VALID_STATES = [
     "West Bengal",
     "Puducherry",
     "Karnataka",
+    "Assam",
 ]
+
+# Local language keywords to force Tavily into grabbing regional media
+REGIONAL_SEARCH_TERMS = {
+    "Kerala": "തിരഞ്ഞെടുപ്പ് വാർത്തകൾ (election news) ജനവികാരം (public mood)",
+    "Tamil Nadu": "தேர்தல் செய்திகள் (election news) மக்கள் கருத்து (public opinion)",
+    "West Bengal": "নির্বাচনের খবর (election news) স্থানীয় রাজনীতি (local politics)",
+    "Puducherry": "தேர்தல் செய்திகள் (election news)",
+    "Karnataka": "ಚುನಾವಣಾ ಸುದ್ದಿಗಳು (election news) ರಾಜಕೀಯ (politics)",
+    "Assam": "নিৰ্বাচনৰ খবৰ (election news)",
+}
 
 EVENT_TAGS = ["alliance", "protest", "scandal", "campaign activity", "general"]
 
@@ -133,6 +144,12 @@ def _build_queries(
         f"election issues local grievances {constituency} {state}",
         f"political alliance candidate defections {state} {constituency}",
     ]
+    
+    # 🇮🇳 INDIAN CONTEXT: Inject native language search to catch regional media
+    regional_terms = REGIONAL_SEARCH_TERMS.get(state)
+    if regional_terms:
+        queries.append(f"{constituency} {regional_terms}")
+
     if party:
         queries.append(f"{party} campaign momentum conflicts {constituency} {state}")
     if candidate:
@@ -392,28 +409,31 @@ async def batch_analyze(targets: List[Dict]) -> List[Dict]:
 # ============================================================
 
 if __name__ == "__main__":
+    async def run_tests():
+        # --- Single constituency ---
+        print("=" * 50)
+        print("Single constituency test")
+        print("=" * 50)
+        result = await analyze_constituency("Kerala", "Thiruvananthapuram")
+        print(json.dumps(result, indent=2))
 
-    # --- Single constituency ---
-    print("=" * 50)
-    print("Single constituency test")
-    print("=" * 50)
-    result = analyze_constituency("Kerala", "Thiruvananthapuram")
-    print(json.dumps(result, indent=2))
+        # --- Multiple constituencies (efficient batch mode) ---
+        print("\n" + "=" * 50)
+        print("Batch test — 3 constituencies, 1-2 Gemini calls")
+        print("=" * 50)
 
-    # --- Multiple constituencies (efficient batch mode) ---
-    print("\n" + "=" * 50)
-    print("Batch test — 3 constituencies, 1-2 Gemini calls")
-    print("=" * 50)
+        targets = [
+            {"state": "Kerala",     "constituency": "Thiruvananthapuram"},
+            {"state": "Kerala",     "constituency": "Thrissur"},
+            {"state": "Tamil Nadu", "constituency": "Chennai Central"},
+        ]
 
-    targets = [
-        {"state": "Kerala",     "constituency": "Thiruvananthapuram"},
-        {"state": "Kerala",     "constituency": "Thrissur"},
-        {"state": "Tamil Nadu", "constituency": "Chennai Central"},
-    ]
+        results = await batch_analyze(targets)
+        for r in results:
+            print(f"\n{r['constituency']} ({r['state']})")
+            print(f"  Score : {r['sentiment_score']}")
+            print(f"  Tags  : {r['event_tags']}")
+            print(f"  Reason: {r['reasoning'][:120]}...")
 
-    results = batch_analyze(targets)
-    for r in results:
-        print(f"\n{r['constituency']} ({r['state']})")
-        print(f"  Score : {r['sentiment_score']}")
-        print(f"  Tags  : {r['event_tags']}")
-        print(f"  Reason: {r['reasoning'][:120]}...")
+    import asyncio
+    asyncio.run(run_tests())
