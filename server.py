@@ -6,6 +6,7 @@ from mcp.server.fastmcp import FastMCP
 from agents.gemini_news_agent import analyze_constituency, batch_analyze
 from agents.political_model import analyze_political_signal
 from wiki_agent.candidate_list_agent import WikiAgent
+from agents.polling_node import analyze_polling_data
 
 mcp = FastMCP("Election Analyzer")
 
@@ -51,6 +52,15 @@ def get_candidate_metadata(state: str) -> str:
     agent.run()
     meta = agent.get_static_meta()
     return json.dumps(meta, indent=2)
+
+@mcp.tool()
+async def get_polling_data(state: str) -> str:
+    """
+    Fetch and extract the latest polling and survey tracker numbers for a given state.
+    Returns JSON containing projected vote shares and seat ranges per party.
+    """
+    result = await analyze_polling_data(state)
+    return json.dumps(result, indent=2)
 
 if __name__ == "__main__":
     mcp.run(transport="stdio")
