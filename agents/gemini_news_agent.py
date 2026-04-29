@@ -145,7 +145,7 @@ def _build_queries(
         f"political alliance candidate defections {state} {constituency}",
     ]
     
-    # 🇮🇳 INDIAN CONTEXT: Inject native language search to catch regional media
+    #  INDIAN CONTEXT: Inject native language search to catch regional media
     regional_terms = REGIONAL_SEARCH_TERMS.get(state)
     if regional_terms:
         queries.append(f"{constituency} {regional_terms}")
@@ -369,7 +369,9 @@ async def batch_analyze(targets: List[Dict]) -> List[Dict]:
         news_map = await fetch_search_results_for_batch(batch)
 
         print(f"[Batch {batch_num}/{len(batches)}] Synthesizing with 1 Gemini call...")
-        results = synthesize_batch(news_map, state)
+        import asyncio
+        loop = asyncio.get_event_loop()
+        results = await loop.run_in_executor(None, synthesize_batch, news_map, state)
 
         today = datetime.date.today().isoformat()
         # Fallback safeguard in case Gemini skips one or misaligns
@@ -397,7 +399,7 @@ async def batch_analyze(targets: List[Dict]) -> List[Dict]:
         # Polite delay between batches to stay under RPM
         if batch_num < len(batches):
             print(f"  Waiting {INTER_BATCH_DELAY}s before next batch...")
-            time.sleep(INTER_BATCH_DELAY)
+            await asyncio.sleep(INTER_BATCH_DELAY)
 
     # --- Merge and return in original order ---
     all_results = {**cached_results, **fresh_results}
