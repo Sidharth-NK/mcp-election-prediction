@@ -1,4 +1,3 @@
-import os 
 import json
 from typing import Dict, List
 from mcp.server.fastmcp import FastMCP
@@ -36,8 +35,8 @@ async def get_batch_political_analysis(targets: List[Dict]) -> str:
 @mcp.tool()
 def get_political_risk_analysis(gemini_output:Dict) -> str:
     """
-    Enriches the gemini sentiment data with politcal risk insights
-    Returns risk level, LOW/MODERATE/HIGH/CRITICAL and event severity score
+    Enriches the gemini sentiment data with political risk insights.
+    Returns risk level: LOW/MODERATE/HIGH/CRITICAL and event severity score.
     """
 
     result = analyze_political_signal(gemini_output)
@@ -50,7 +49,9 @@ def get_candidate_metadata(state: str) -> str:
     Returns party, alliance, constituency, and candidate identity for all seats.
     Accepts state names: Kerala, Tamil Nadu, West Bengal, Puducherry, Assam.
     """
-    agent = WikiAgent(states=[state])
+    # live_enrich=False keeps it fast (no infobox API calls per candidate)
+    # html_dir is not used — _extract_state always fetches from WIKI_REST_URLS
+    agent = WikiAgent(states=[state], live_enrich=False)
     agent.run()
     meta = agent.get_static_meta()
     return json.dumps(meta, indent=2)
