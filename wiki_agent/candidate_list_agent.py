@@ -479,13 +479,13 @@ def _fetch_infobox(title: str, delay: float = 1.0) -> Optional[dict]:
     Returns a dict of infobox key-value pairs, or None on failure.
     """
     try:
-        import requests
+        import httpx
         params = {
             "action": "query", "prop": "revisions",
             "rvprop": "content", "rvslots": "main",
             "titles": title, "format": "json", "formatversion": "2",
         }
-        r = requests.get(WIKI_API, params=params, headers=HEADERS, timeout=15)
+        r = httpx.get(WIKI_API, params=params, headers=HEADERS, timeout=15)
         r.raise_for_status()
         pages = r.json().get("query", {}).get("pages", [])
         if not pages:

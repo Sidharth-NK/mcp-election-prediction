@@ -1,0 +1,34 @@
+{
+  "Kerala": {
+    "Thiruvananthapuram": {
+      "rural_percentage": 46.2,
+      "urban_percentage": 53.8,
+      "literacy_rate": 93.02,
+      "sc_st_percentage": 11.6,
+      "major_demographic_note": "High urban concentration. Significant coastal voter base. High literacy."
+    },
+    "Kasaragod": {
+      "rural_percentage": 61.1,
+      "urban_percentage": 38.9,
+      "literacy_rate": 90.09,
+      "sc_st_percentage": 10.4,
+      "major_demographic_note": "Linguistic minority presence (Kannada, Tulu). Agrarian and semi-urban mix."
+    },
+    "Thrissur": {
+      "rural_percentage": 32.8,
+      "urban_percentage": 67.2,
+      "literacy_rate": 95.08,
+      "sc_st_percentage": 10.5,
+      "major_demographic_note": "Highly urbanized. Strong presence of religious minorities balancing the demographic."
+    }
+  },
+  "Tamil Nadu": {
+    "Chennai": {
+      "rural_percentage": 0.0,
+      "urban_percentage": 100.0,
+      "literacy_rate": 90.18,
+      "sc_st_percentage": 16.8,
+      "major_demographic_note": "Exclusively urban metropolitan. High working-class and service sector population."
+    }
+  }
+}
