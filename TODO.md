@@ -12,6 +12,8 @@ Status: Completed (v2 - Batched & Cached)
     *   *Fix:* Implement a fast "breaking news check" bypass, or reduce cache TTL during active election weeks.
 *   **[ ] Hardcoded Event Tags:** The model is forced into ['alliance', 'protest', 'scandal', 'campaign activity', 'general'].
     *   *Fix:* Make tags dynamic or expand the list mapping to the TFT Forecasting input matrix.
+*   **[ ] Tavily Recency Bias:** Search indexing might miss major breaking news happening <48 hours before polling.
+    *   *Fix:* Implement a Serper API (Google Search) fallback specifically triggered during the final 3 days of a campaign for real-time indexing.
 *   **[ ] Model Attention Span (Lost in the Middle):** Batching 10 constituencies sends ~120 search snippets to the LLM. 
     *   *Audit:* Ensure Gemini 2.5 isn't dropping the middle constituencies. Consider reducing `BATCH_SIZE` to 5 if accuracy drops.
 

@@ -30,9 +30,9 @@ except Exception as e:
 
 class PartyMath(BaseModel):
     party: str = Field(description="Abbreviation of the party or alliance (e.g., LDF, UDF, NDA, DMK, AIADMK).")
-    projected_vote_share_percentage: float = Field(description="The projected vote share percentage (e.g., 42.5). Use 0.0 if unknown.")
-    projected_seats_min: int = Field(description="Minimum projected seats. Use 0 if unknown.")
-    projected_seats_max: int = Field(description="Maximum projected seats. Use 0 if unknown.")
+    projected_vote_share_percentage: Optional[float] = Field(default=None, description="The projected vote share percentage (e.g., 42.5). Use null if unknown.")
+    projected_seats_min: Optional[int] = Field(default=None, description="Minimum projected seats. Use null if unknown.")
+    projected_seats_max: Optional[int] = Field(default=None, description="Maximum projected seats. Use null if unknown.")
 
 class PollingOutput(BaseModel):
     state: str = Field(description="The state being surveyed.")
@@ -98,7 +98,7 @@ Identify any projected vote shares (%) and seat counts.
 Search Snippets:
 {raw_news}
 
-If exact polling numbers for 2026 are not yet available in the text, infer the current polling demographic consensus based on the political momentum described, but output 0.0 or 0 for the math fields to avoid hallucinations. You must return a strict JSON object mapping exactly to the schema.
+If exact polling numbers for 2026 are not yet available in the text, infer the current polling demographic consensus based on the political momentum described, but output null for the math fields to avoid hallucinations. You must return a strict JSON object mapping exactly to the schema.
 """
     response = gemini.models.generate_content(
         model="gemini-3-flash-preview",
@@ -111,6 +111,16 @@ If exact polling numbers for 2026 are not yet available in the text, infer the c
     )
     
     output = response.parsed
+    
+    # --- PYTHON MATH VALIDATION LAYER ---
+    total_vote_share = sum(p.projected_vote_share_percentage for p in output.parties if p.projected_vote_share_percentage is not None)
+    
+    # If the LLM hallucinated numbers exceeding 100% significantly, wipe the math to prevent model poisoning
+    if total_vote_share > 105.0:
+        print(f"  > [{state}] WARNING: Gemini hallucinated invalid math (Sum: {total_vote_share}%). Nullifying vote shares.")
+        for p in output.parties:
+            p.projected_vote_share_percentage = None
+            
     # Convert Pydantic object to dictionary, adding a timestamp
     result_dict = output.model_dump()
     result_dict["date_aggregated"] = datetime.date.today().isoformat()
