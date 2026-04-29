@@ -1,0 +1,12 @@
+mcp
+google-genai
+httpx
+pydantic
+python-dotenv
+beautifulsoup4
+
+# TFT Engine Dependencies
+torch
+pytorch-lightning
+pytorch-forecasting
+pandas
