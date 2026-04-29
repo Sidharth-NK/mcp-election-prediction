@@ -101,7 +101,7 @@ Search Snippets:
 If exact polling numbers for 2026 are not yet available in the text, infer the current polling demographic consensus based on the political momentum described, but output null for the math fields to avoid hallucinations. You must return a strict JSON object mapping exactly to the schema.
 """
     response = gemini.models.generate_content(
-        model="gemini-2.5-flash",
+        model="gemini-2.5-flash-lite",
         contents=prompt,
         config=types.GenerateContentConfig(
             response_mime_type="application/json",

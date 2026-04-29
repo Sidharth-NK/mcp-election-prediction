@@ -27,19 +27,21 @@ def load_all_targets_from_wiki() -> List[Dict]:
     This guarantees perfectly synced (state, district, constituency) mappings 
     for all data processing.
     """
-    # Assuming wiki agent exported its flat candidates representation
-    wiki_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "wiki_agent_candidates.json"))
+    wiki_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "wiki_static_meta.json"))
     
     if not os.path.exists(wiki_path):
         print(f"Warning: {wiki_path} not found. Returning empty list.")
         return []
         
     with open(wiki_path, "r", encoding="utf-8") as f:
-        candidates = json.load(f)
+        data = json.load(f)
         
     targets_map = {}
-    for c in candidates:
-        # Deduplicate multiple candidates down to unique constituencies
+    for c in data.get("candidates", []):
+        # Skip entries that are not fully formed (e.g., missing constituency or district)
+        if not c.get("constituency") or not c.get("district"):
+            continue
+            
         key = f"{c['state']}::{c['constituency']}"
         if key not in targets_map:
             targets_map[key] = {
@@ -107,6 +109,11 @@ async def build_dataset(targets: List[Dict], time_idx: int = 0) -> pd.DataFrame:
             )
             flat = flatten_fusion_payload(payload)
             records.append(flat)
+            
+            # API Rate Limit Protection (15 Requests per Minute Free Tier restrict)
+            # Sleep 4 seconds between constituencies to guarantee 100% data completion
+            await asyncio.sleep(4)
+            
         except Exception as e:
             print(f"  [!] Failed processing {t['constituency']}: {e}")
             
@@ -124,6 +131,7 @@ async def build_dataset(targets: List[Dict], time_idx: int = 0) -> pd.DataFrame:
 
 if __name__ == "__main__":
     async def main():
+        # Processes all dynamically loaded targets from the WikiAgent dictionary
         df = await build_dataset(TARGETS, time_idx=0)
         
         print("\n=== FINAL TFT DATAFRAME HEAD ===")
