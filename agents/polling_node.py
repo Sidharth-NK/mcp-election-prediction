@@ -101,7 +101,7 @@ Search Snippets:
 If exact polling numbers for 2026 are not yet available in the text, infer the current polling demographic consensus based on the political momentum described, but output null for the math fields to avoid hallucinations. You must return a strict JSON object mapping exactly to the schema.
 """
     response = gemini.models.generate_content(
-        model="gemini-3-flash-preview",
+        model="gemini-2.5-flash",
         contents=prompt,
         config=types.GenerateContentConfig(
             response_mime_type="application/json",
@@ -115,11 +115,12 @@ If exact polling numbers for 2026 are not yet available in the text, infer the c
     # --- PYTHON MATH VALIDATION LAYER ---
     total_vote_share = sum(p.projected_vote_share_percentage for p in output.parties if p.projected_vote_share_percentage is not None)
     
-    # If the LLM hallucinated numbers exceeding 100% significantly, wipe the math to prevent model poisoning
+    # If the LLM hallucinated numbers exceeding 100% significantly, normalize them to preserve the signal ratio
     if total_vote_share > 105.0:
-        print(f"  > [{state}] WARNING: Gemini hallucinated invalid math (Sum: {total_vote_share}%). Nullifying vote shares.")
+        print(f"  > [{state}] WARNING: Gemini hallucinated invalid math (Sum: {total_vote_share}%). Normalizing to 100%.")
         for p in output.parties:
-            p.projected_vote_share_percentage = None
+            if p.projected_vote_share_percentage is not None:
+                p.projected_vote_share_percentage = round((p.projected_vote_share_percentage / total_vote_share) * 100, 2)
             
     # Convert Pydantic object to dictionary, adding a timestamp
     result_dict = output.model_dump()

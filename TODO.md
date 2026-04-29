@@ -23,11 +23,17 @@ Status: Completed (v3.2.0)
 *   **[x] Task:** Integrate Wiki Agent into MCP Orchestrator.
 
 ## Phase 2.5: Indian Context Data Ingestion (NEW)
-Status: Pending
+Status: Completed (v3.3.0)
 
-*   **[ ] Task:** Build `tcpd_agent.py` to ingest historical booth/assembly data (outcomes, turnout, margins) from ECI/TCPD CSV files.
-*   **[ ] Task:** Build `demographic_node.py` to ingest static constituency demographics (rural/urban, caste proxy, religious splits).
-*   **[ ] Task:** Build `polling_node.py` to aggregate CSDS-Lokniti and Axis My India survey tracker data.
+*   **[x] Task:** Build `tcpd_agent.py` to ingest historical booth/assembly data (outcomes, turnout, margins) from ECI/TCPD CSV files.
+*   **[x] Task:** Build `demographic_node.py` to ingest static constituency demographics (rural/urban, caste proxy, religious splits).
+*   **[x] Task:** Build `polling_node.py` to aggregate CSDS-Lokniti and Axis My India survey tracker data.
+
+### Known Limitations / Technical Debt
+*   **[ ] Demographics Aging (Census 2011):** Current static demographics rely on 15-year-old census data, blinding the model to fast-urbanizing constituencies.
+    *   *Fix:* Integrate DevDataLab SHRUG dataset (nighttime satellite lights) as a proxy for modern urbanization ratios.
+*   **[ ] TCPD Hard Cutoff Risk:** A local CSV means the historical node is blind to delimitation boundary changes or by-elections.
+    *   *Fix:* Implement a documented maintenance script or automated ECI scraper that updates the master CSV at the start of every election cycle.
 
 ## Phase 3: MCP Orchestrator
 Status: Completed (v3.1.0)
