@@ -7,6 +7,8 @@ from agents.gemini_news_agent import analyze_constituency, batch_analyze
 from agents.political_model import analyze_political_signal
 from wiki_agent.candidate_list_agent import WikiAgent
 from agents.polling_node import analyze_polling_data
+from agents.demographic_node import get_demographic_vector
+from agents.tcpd_node import get_historical_baseline
 
 mcp = FastMCP("Election Analyzer")
 
@@ -60,6 +62,24 @@ async def get_polling_data(state: str) -> str:
     Returns JSON containing projected vote shares and seat ranges per party.
     """
     result = await analyze_polling_data(state)
+    return json.dumps(result, indent=2)
+
+@mcp.tool()
+def get_constituency_demographics(state: str, district: str) -> str:
+    """
+    Retrieves the static census demographic vector (rural/urban ratio, literacy, caste proxy)
+    for a given district. This acts as the sociological weighting layer for the model.
+    """
+    result = get_demographic_vector(state, district)
+    return json.dumps(result, indent=2)
+
+@mcp.tool()
+def get_historical_election_data(state: str, constituency: str) -> str:
+    """
+    Retrieves the historical election mathematical baseline for a given constituency.
+    Returns past winner, margin of victory, vote shares, and voter turnout.
+    """
+    result = get_historical_baseline(state, constituency)
     return json.dumps(result, indent=2)
 
 if __name__ == "__main__":
