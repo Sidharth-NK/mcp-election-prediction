@@ -18,6 +18,11 @@ DATA_DIR = os.path.join(os.path.dirname(__file__), "data", "tcpd")
 # ─── Lazy-loaded Cache ───────────────────────────────────────────────────────
 _tcpd_df: Optional[pd.DataFrame] = None
 
+def _normalize_name(s: str) -> str:
+    """Lowercase, strip, remove underscores and extra spaces for matching."""
+    return s.lower().replace("_", " ").strip()
+
+
 def _load_all_tcpd() -> pd.DataFrame:
     """Loads and caches all TCPD CSVs into one DataFrame."""
     global _tcpd_df
@@ -39,9 +44,14 @@ def _load_all_tcpd() -> pd.DataFrame:
     _tcpd_df["Year"] = pd.to_numeric(_tcpd_df["Year"], errors="coerce")
     _tcpd_df["Position"] = pd.to_numeric(_tcpd_df["Position"], errors="coerce")
 
-    # Normalize names for matching
-    _tcpd_df["_state_lower"] = _tcpd_df["State_Name"].str.lower().str.strip()
-    _tcpd_df["_const_lower"] = _tcpd_df["Constituency_Name"].str.lower().str.strip()
+    # Normalize names for matching — CRITICAL: remove underscores so
+    # 'Tamil_Nadu' and 'Tamil Nadu' both become 'tamil nadu'
+    _tcpd_df["_state_norm"] = _tcpd_df["State_Name"].apply(
+        lambda x: _normalize_name(str(x))
+    )
+    _tcpd_df["_const_norm"] = _tcpd_df["Constituency_Name"].apply(
+        lambda x: _normalize_name(str(x))
+    )
 
     return _tcpd_df
 
@@ -50,17 +60,44 @@ def get_historical_baseline(state: str, constituency: str) -> Dict:
     """
     Returns the most recent election data for a constituency.
     Includes rolling average margin and turnout volatility for the ML model.
+
+    Matching strategy (two passes):
+      1. Exact normalized match (lowercase, underscore → space)
+      2. Prefix/token fuzzy match to handle minor spelling variants
+         e.g. wiki 'Manjeshwaram' → TCPD 'MANJESHWAR'
     """
     if not os.path.exists(DATA_DIR):
         return {"status": "error", "message": f"TCPD directory not found: {DATA_DIR}"}
 
     df = _load_all_tcpd()
-    s_lower = state.lower().strip()
-    c_lower = constituency.lower().strip()
+    s_norm = _normalize_name(state)
+    c_norm = _normalize_name(constituency)
 
-    # Filter to this constituency
-    mask = (df["_state_lower"] == s_lower) & (df["_const_lower"] == c_lower)
+    # Pass 1: exact normalized match
+    mask = (df["_state_norm"] == s_norm) & (df["_const_norm"] == c_norm)
     match = df[mask].copy()
+
+    # Pass 2: fuzzy fallback — match state exactly, then find the best
+    # constituency name that starts with or contains the query as a prefix
+    if match.empty:
+        state_mask = df["_state_norm"] == s_norm
+        state_df = df[state_mask]
+        if not state_df.empty:
+            # Try prefix match: TCPD name starts with wiki name or vice versa
+            best = None
+            best_len = 0
+            for tcpd_name in state_df["_const_norm"].unique():
+                # Remove spaces for comparison (handles 'Thiru-Vi-Ka-Nagar' etc.)
+                t = tcpd_name.replace(" ", "").replace("-", "")
+                q = c_norm.replace(" ", "").replace("-", "")
+                # Match if either is a prefix of the other (min 5 chars)
+                min_len = min(len(t), len(q))
+                if min_len >= 5 and (t.startswith(q[:min_len]) or q.startswith(t[:min_len])):
+                    if min_len > best_len:
+                        best = tcpd_name
+                        best_len = min_len
+            if best:
+                match = state_df[state_df["_const_norm"] == best].copy()
 
     if match.empty:
         return {
