@@ -45,8 +45,12 @@ Status: Completed (v3.1.0)
 *   **[ ] Task:** Add co-developer's Wiki Agent tools to the server once ready.
 
 ## Phase 4: Feature Fusion & TFT Forecasting Engine
-Status: Pending (blocked on Phase 2.5 Indian Context data)
+Status: Completed (v4.0.0)
 
-*   **[ ] Task:** Design feature fusion layer — align static (Wiki/Demographics), dynamic (Regional Gemini/Polling), and historical (TCPD) data.
-*   **[ ] Task:** Train Temporal Fusion Transformer on historical election + sentiment features.
-*   **[ ] Task:** Output multi-horizon predictions (win probability, vote share trends).
+*   **[x] Task:** Design feature fusion layer — align static (Wiki/Demographics), dynamic (Regional Gemini/Polling), and historical (TCPD) data.
+*   **[x] Task:** Build `dataset_builder.py` to recursively compile historical PyTorch inputs dynamically per constituency using the wiki registry.
+*   **[x] Task:** Train Temporal Fusion Transformer on historical election + sentiment features via `model_training.py`.
+*   **[x] Task:** Output multi-horizon predictions via quantiles.
+
+## Phase 5: UI & Final Reporting (Up Next)
+*   **[ ] Task:** Build Web Dashboard (Streamlit/FastAPI) to surface TFT quantiles, Risk Indicators, and Gemini Sentiment strings.
