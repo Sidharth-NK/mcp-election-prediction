@@ -1,6 +1,6 @@
 # MCP Election Prediction Pipeline
 
-An enterprise-grade, agentic Machine Learning pipeline designed to predict Indian State Assembly elections at the constituency level.
+A multi-agentic machine learning pipeline designed to predict Indian State Assembly elections at the constituency level.
 
 This project goes beyond simple polling or baseline historical statistics by utilizing a **Data Fusion Architecture**. It automatically merges decades of historical election data with statically mapped demographics and live, AI-driven sentiment analysis to classify the political risk and predict the outcome of high-volatility constituencies.
 
