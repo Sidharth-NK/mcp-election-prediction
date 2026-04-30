@@ -1,4 +1,4 @@
-# MCP Election Prediction Pipeline
+# MCP based Agentic Election Forecaster
 
 A multi-agentic machine learning pipeline designed to predict Indian State Assembly elections at the constituency level.
 
