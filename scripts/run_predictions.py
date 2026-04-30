@@ -24,6 +24,7 @@ import os
 import sys
 import json
 import datetime
+import asyncio
 import pandas as pd
 from typing import Dict, List, Optional
 from collections import defaultdict
@@ -34,6 +35,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 from agents.tcpd_node import get_historical_baseline, get_all_constituencies, _load_all_tcpd
 from agents.political_model import analyze_political_signal, classify_political_risk, calculate_event_severity
 from agents.demographic_node import get_demographic_vector
+from agents.gemini_news_agent import batch_analyze
 
 
 # ─── Load Wiki Candidate Registry ────────────────────────────────────────────
@@ -70,6 +72,8 @@ def predict_constituency(
     constituency: str,
     district: str,
     wiki_registry: Dict,
+    live_sentiment_score: float = 0.0,
+    live_severity_score: float = 0.0,
 ) -> Optional[Dict]:
     """
     Runs the full prediction pipeline for a single constituency.
@@ -81,14 +85,14 @@ def predict_constituency(
         return None
 
     # ─── 2. Political Risk Model (ML) ────────────────────────────────────
-    # Use neutral live signals (no Gemini in batch mode)
+    # Use LIVE signals fetched via Gemini mapping
     risk_level = classify_political_risk(
         rolling_avg_margin=history["rolling_avg_margin"],
         turnout_std=history["turnout_std"],
         last_vote_share=history["last_vote_share"],
         n_elections=history["n_elections"],
-        sentiment_score=0.0,  # Neutral — no live news
-        severity=0.0,         # Neutral — no live events
+        sentiment_score=live_sentiment_score,
+        severity=live_severity_score,
     )
 
     # ─── 3. Demographics ─────────────────────────────────────────────────
@@ -129,6 +133,20 @@ def predict_constituency(
         predicted_outcome = "TOSS-UP / POSSIBLE FLIP"
         confidence = "VERY LOW"
 
+    # ─── 7. Explicit Party Winner Prediction ─────────────────────────────
+    top_cands = history.get("top_candidates", [])
+    runner_up_2021 = top_cands[1]["party"] if len(top_cands) > 1 else "UNKNOWN_CHALLENGER"
+
+    # Base logic: Incumbent wins if seat is safe. 
+    # If seat is highly risky AND local sentiment is negative, it flips to the historical runner-up.
+    if risk_level in ["LOW", "MODERATE"]:
+        predicted_winner_party_2026 = winner_2021
+    else:
+        if live_sentiment_score < -0.1:
+            predicted_winner_party_2026 = runner_up_2021
+        else:
+            predicted_winner_party_2026 = winner_2021
+
     return {
         # Identity
         "state": state,
@@ -138,6 +156,8 @@ def predict_constituency(
         # Historical (TCPD)
         "last_election_year": history["past_election_year"],
         "winner_2021": winner_2021,
+        "runner_up_2021": runner_up_2021,
+        "predicted_winner_party_2026": predicted_winner_party_2026,
         "winning_margin_pct": history["winning_margin_percentage"],
         "rolling_avg_margin": history["rolling_avg_margin"],
         "voter_turnout_pct": history["voter_turnout_percentage"],
@@ -167,7 +187,7 @@ def predict_constituency(
         # Prediction
         "predicted_outcome": predicted_outcome,
         "prediction_confidence": confidence,
-        "prediction_basis": "Historical TCPD + ML Risk Model (neutral sentiment baseline)",
+        "prediction_basis": "Historical TCPD + ML Risk Model + Gemini Live Sentiment",
     }
 
 
@@ -197,8 +217,22 @@ def run_full_pipeline():
     for s in sorted(by_state.keys()):
         print(f"         {s}: {len(by_state[s])} constituencies")
 
+    # ─── 3. FETCH LIVE GEMINI DATA ───────────────────────────────────────────
+    print(f"\n[3/4] Fetching Live Sentiments (Gemini 2.5 Flash + Tavily)...")
+    print(f"       (This uses the 10-batch system with rate-limit delays. Est: ~15 mins)")
+    targets = [{"state": c["state"], "constituency": c["constituency"]} for c in all_constituencies]
+    
+    try:
+        live_results = asyncio.run(batch_analyze(targets))
+        live_map = {(r["state"], r["constituency"]): r for r in live_results}
+        print(f"        Successfully pulled live data for {len(live_map)} constituencies.")
+    except Exception as e:
+        print(f"        Failed to fetch live data: {e}")
+        print("       Falling back to neutral sentiment baseline (0.0).")
+        live_map = {}
+
     # Run predictions
-    print(f"\n[3/3] Running Predictions...")
+    print(f"\n[4/4] Running Predictions...")
     all_predictions = []
     failed = 0
     
@@ -209,11 +243,22 @@ def run_full_pipeline():
         success_count = 0
         for c in constituencies:
             try:
+                # Extract live sentiment if exists
+                live_data = live_map.get((c["state"], c["constituency"]), {})
+                sentiment = live_data.get("sentiment_score", 0.0)
+                
+                # In a real system, calculate_event_severity would parse "event_tags"
+                # For now, we apply a simplistic mapping based on tags
+                tags = live_data.get("event_tags", [])
+                severity = 1.0 if any(t in ["protest", "scandal"] for t in tags) else 0.0
+
                 result = predict_constituency(
                     state=c["state"],
                     constituency=c["constituency"],
                     district=c.get("district", ""),
                     wiki_registry=wiki_registry,
+                    live_sentiment_score=sentiment,
+                    live_severity_score=severity,
                 )
                 if result:
                     all_predictions.append(result)

@@ -32,7 +32,7 @@ load_dotenv()
 # ============================================================
 
 GEMINI_API_KEY  = os.getenv("GEMINI_API_KEY")
-TAVILY_API_KEY  = os.getenv("TAVILY_API_KEY")
+TAVILY_API_KEY  = os.getenv("TAVILY_API_KEY") or os.getenv("NEWS_API_KEY")
 CACHE_DIR       = os.getenv("CACHE_DIR", ".cache/sentiment")
 CACHE_TTL_HOURS = 6          # Results older than this are considered stale
 BATCH_SIZE      = 10         # Constituencies per Gemini call (keep ≤ 10)
@@ -42,7 +42,9 @@ INTER_BATCH_DELAY = 4.0      # Seconds to wait between Gemini batch calls (RPM s
 VALID_STATES = [
     "Kerala",
     "Tamil Nadu",
+    "Tamil_Nadu",
     "West Bengal",
+    "West_Bengal",
     "Puducherry",
     "Karnataka",
     "Assam",
