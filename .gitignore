@@ -1,4 +1,12 @@
 .env
 mcp_venv/
 agents/.cache/
-__pycache__/
+__pycache__/.cache/
+lightning_logs/
+predictions/
+tft_engine/checkpoints/
+tft_engine/data/
+agents/data/tcpd/*.csv
+*.xlsx
+mcp-venv/
+*.pkl
