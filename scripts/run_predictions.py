@@ -67,6 +67,40 @@ def load_wiki_registry() -> Dict:
 RISK_MAP = {"CRITICAL": 4, "HIGH": 3, "MODERATE": 2, "LOW": 1}
 
 
+# ─── Party Name Normalization ────────────────────────────────────────────────
+# TCPD uses 'CPM', wiki scraper returns 'CPI(M)'; normalize to a common key.
+PARTY_ALIASES: Dict[str, str] = {
+    # LDF parties
+    "CPI(M)":   "CPM",
+    "CPIM":      "CPM",
+    "CPI-M":     "CPM",
+    "CONG(S)":   "C(S)",
+    "CONG-S":    "C(S)",
+    "KC-M":      "KC(M)",
+    "KCM":       "KC(M)",
+    "RJD":       "CPM",    # RJD in wiki is a Kerala LDF partner small party, keep as is
+    # UDF parties
+    "INC(I)":   "INC",
+    "IUML":      "IUML",
+    # NDA parties
+    "TTP":       "BJP",    # Thanthai Periyar Dravidar Katchi, treat as NDA ally in TN
+    # Tamil Nadu
+    "AIADMK":    "ADMK",
+    "AI-ADMK":   "ADMK",
+    # West Bengal
+    "AITC":      "TMC",
+    "TRNC":      "TMC",
+}
+
+
+def normalize_party(party: str) -> str:
+    """Canonicalize party name to match TCPD abbreviations."""
+    if not party:
+        return ""
+    p = party.strip()
+    return PARTY_ALIASES.get(p, p)
+
+
 def predict_constituency(
     state: str,
     constituency: str,
@@ -117,9 +151,10 @@ def predict_constituency(
     competitiveness = round(min(10.0, swing_index + (history["turnout_std"] / 3.0)), 2)
 
     # ─── 6. Predicted Outcome Inference ──────────────────────────────────
-    # Based on historical patterns: if margin is large → likely retention
-    # If margin is tight → toss-up
     winner_2021 = history.get("winner", "UNKNOWN")
+    top_cands = history.get("top_candidates", [])
+    runner_up_2021 = top_cands[1]["party"] if len(top_cands) > 1 else "UNKNOWN_CHALLENGER"
+
     if margin > 15.0:
         predicted_outcome = "SAFE HOLD"
         confidence = "HIGH"
@@ -133,19 +168,90 @@ def predict_constituency(
         predicted_outcome = "TOSS-UP / POSSIBLE FLIP"
         confidence = "VERY LOW"
 
-    # ─── 7. Explicit Party Winner Prediction ─────────────────────────────
-    top_cands = history.get("top_candidates", [])
-    runner_up_2021 = top_cands[1]["party"] if len(top_cands) > 1 else "UNKNOWN_CHALLENGER"
+    # ─── 7. Explicit Party Winner Prediction (2026) ───────────────────────
+    #
+    # Strategy: Use the actual 2026 candidate list as the authoritative source.
+    # Find the most-credible winner based on three signals:
+    #   a) Historical dominance (winner_2021 / runner_up_2021 from TCPD)
+    #   b) Whether a strong alliance party is fielding a candidate in 2026
+    #   c) Live Gemini sentiment — negative flips the prediction to the
+    #      strongest challenger from the 2026 candidate list.
+    #
+    # Define alliance structures for major states
+    # Note: both raw wiki names AND TCPD abbreviations included
+    LDF  = {"CPM", "CPI(M)", "CPI", "NCP", "JD(S)", "KC(M)", "KCM", "LJD",
+            "KEC(B)", "INL", "CPS", "C(S)", "Cong(S)", "CONG(S)", "RJD",
+            "RSP", "KTP", "SP", "SJP", "NLP"}
+    UDF  = {"INC", "INC(I)", "IUML", "KEC", "KEC(M)", "RMPI", "KC", "CMPC",
+            "JD(U)", "ML", "KSP"}
+    NDA  = {"BJP", "BDJS", "NSS", "TTP", "BDML"}
+    DMK_FRONT  = {"DMK", "INC", "CPM", "CPI(M)", "CPI", "VCK", "MDMK", "MMK",
+                  "KMDK", "AIFB", "MNM"}
+    ADMK_FRONT = {"ADMK", "AIADMK", "PMK", "BJP", "TTP", "DMDK"}
+    TMC_FRONT  = {"TMC", "AITC"}
+    BJP_FRONT  = {"BJP", "AGP", "UPPL", "BOPF", "TTP"}
 
-    # Base logic: Incumbent wins if seat is safe. 
-    # If seat is highly risky AND local sentiment is negative, it flips to the historical runner-up.
-    if risk_level in ["LOW", "MODERATE"]:
-        predicted_winner_party_2026 = winner_2021
-    else:
-        if live_sentiment_score < -0.1:
-            predicted_winner_party_2026 = runner_up_2021
+    # Build set of 2026 contesting parties in this constituency
+    # Normalize wiki party names to TCPD canonical forms for matching
+    parties_2026_set = {
+        normalize_party(c["party"].strip())
+        for c in candidates_2026
+        if c.get("party")
+    }
+
+    # --- Determine if a 'flip' should happen ---
+    # Flip is warranted when:
+    #   - The seat is CRITICAL/HIGH risk (tight historically), AND
+    #   - Gemini detected strongly negative sentiment (anti-incumbency)
+    flip_warranted = (
+        risk_level in ["CRITICAL", "HIGH"]
+        and live_sentiment_score < -0.15
+    )
+
+    if not flip_warranted:
+        # No flip: incumbent (2021 winner) holds if they are contesting in 2026
+        if winner_2021 in parties_2026_set:
+            predicted_winner_party_2026 = winner_2021
+        elif parties_2026_set:
+            # Winner party not contesting 2026 — use best historical from 2026 list
+            # Prefer LDF/UDF/NDA/TMC parties in historical dominance order
+            for p in ([winner_2021, runner_up_2021] + list(parties_2026_set)):
+                if p in parties_2026_set:
+                    predicted_winner_party_2026 = p
+                    break
+            else:
+                predicted_winner_party_2026 = winner_2021
         else:
             predicted_winner_party_2026 = winner_2021
+    else:
+        # Flip: give the seat to the strongest challenger from 2026 list
+        # Priority: runner_up_2021 if they're contesting, else the biggest
+        # opposition alliance party present in 2026
+        if runner_up_2021 in parties_2026_set:
+            predicted_winner_party_2026 = runner_up_2021
+        else:
+            # Find the best challenger by looking for known strong parties
+            # Determine which bloc won and look for the opposing bloc
+            if winner_2021 in LDF:
+                opponent_bloc = UDF | NDA
+            elif winner_2021 in UDF:
+                opponent_bloc = LDF | NDA
+            elif winner_2021 in NDA | BJP_FRONT:
+                opponent_bloc = UDF | LDF | TMC_FRONT | DMK_FRONT
+            elif winner_2021 in DMK_FRONT:
+                opponent_bloc = ADMK_FRONT
+            elif winner_2021 in ADMK_FRONT:
+                opponent_bloc = DMK_FRONT
+            elif winner_2021 in TMC_FRONT:
+                opponent_bloc = BJP_FRONT
+            else:
+                opponent_bloc = parties_2026_set  # fallback
+
+            challenger = next(
+                (p for p in parties_2026_set if p in opponent_bloc),
+                runner_up_2021
+            )
+            predicted_winner_party_2026 = challenger
 
     return {
         # Identity
@@ -203,10 +309,27 @@ def run_full_pipeline():
     wiki_registry = load_wiki_registry()
     print(f"       Found {sum(len(v) for v in wiki_registry.values())} candidates across {len(wiki_registry)} constituencies")
 
-    # Get all constituencies from TCPD
-    print("[2/3] Loading TCPD Historical Data...")
-    all_constituencies = get_all_constituencies()
-    print(f"       Found {len(all_constituencies)} unique constituencies across all states")
+    # ─── BUG FIX: Scope predictions ONLY to 2026 election constituencies ──
+    # The wiki_static_meta.json was scraped from the official 2026 candidate
+    # lists. It is the authoritative source of WHICH constituencies exist in 2026.
+    # Using get_all_constituencies() would return thousands of defunct/historical
+    # seats from 1962-2009 that do NOT exist in 2026 elections.
+    print("[2/4] Deriving 2026-valid constituencies from Wiki candidate registry...")
+    wiki_constituency_keys = set(wiki_registry.keys())
+
+    if not wiki_constituency_keys:
+        # Fallback to TCPD (only latest year per constituency) if wiki is missing
+        print("       [WARN] Wiki registry empty. Falling back to TCPD (may include defunct seats).")
+        all_tcpd = get_all_constituencies()
+        all_constituencies = all_tcpd
+    else:
+        # Build list from wiki registry — these are definitively 2026 seats
+        all_constituencies = [
+            {"state": state, "constituency": const, "district": ""}
+            for (state, const) in wiki_constituency_keys
+        ]
+
+    print(f"       Confirmed {len(all_constituencies)} active 2026 constituencies")
 
     # Group by state for progress tracking
     by_state = defaultdict(list)
