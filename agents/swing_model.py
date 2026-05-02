@@ -138,7 +138,30 @@ ANTI_INCUMBENCY_STRENGTH = {
     "Assam": 0.50,        # Moderate: could go either way
     "Puducherry": 0.45,   # Moderate-weak
 }
+# ============================================================
+# STATE POLITICAL BEHAVIOR PROFILES
+# ============================================================
 
+STATE_LOGIC_MODIFIERS = {
+    "Kerala": {
+        "bipolar_floor": 25,         # Neither LDF nor UDF should fall below this easily
+        "incumbency_penalty": 1.2,    # History of alternating (anti-incumbency is king)
+        "cadre_resilience": 15.0,     # Strong cadre base makes strongholds very hard to flip
+    },
+    "Tamil Nadu": {
+        "charismatic_swing": 1.5,     # Charismatic leaders can cause massive rural swings
+        "stronghold_resilience": 20.0, # Family/Party bastions are nearly unflipable
+        "urban_volatility": 1.3,      # Urban voters flip more easily than rural ones
+    },
+    "West Bengal": {
+        "cadre_dominance": 25.0,      # Cadre-based parties have massive stronghold protection
+        "polarization_multiplier": 1.4, # High sentiment leads to extreme winner-takes-all swings
+    },
+    "Assam": {
+        "ethnic_inertia": 10.0,       # Historical wins in ethnic blocks are stable
+        "identity_swing": 1.2,        # Changes in identity-alignment cause larger local swings
+    }
+}
 
 # ============================================================
 # UNIFORM SWING MODEL
@@ -294,33 +317,57 @@ def _apply_macro_target_allocation(
             sent = sentiment_map.get(p["constituency"], 0.0) if sentiment_map else 0.0
             margin = p.get("rolling_avg_margin", 0.0)
             
+            # Load state-specific behavior profiles
+            profile = STATE_LOGIC_MODIFIERS.get(state, {})
+            
             # Base vulnerability
-            vuln = margin + (sent * 5.0)
+            # Higher margin = less vulnerable. Negative sentiment = more vulnerable.
+            sent_factor = profile.get("polarization_multiplier", 1.0) if sent != 0 else 1.0
+            vuln = margin + (sent * 5.0 * sent_factor)
+            
+            # Apply Political Inertia / Historical Resilience
+            # Every consecutive win by the same party adds a 'loyalty bonus' (harder to flip)
+            loyalty_per_win = profile.get("cadre_dominance", profile.get("stronghold_resilience", profile.get("cadre_resilience", 10.0)))
+            loyalty_bonus = p.get("party_loyalty", 0) * loyalty_per_win
             
             # Apply demographic bonus if polling indicates a wave among specific groups
             demo_bonus = 0.0
             if demographic_shifts:
                 for target_alliance, shifts in demographic_shifts.items():
                     if target_alliance in deficit_queue:
-                        # If a deficit alliance is taking the SC/ST vote, high SC/ST seats are highly vulnerable
+                        # Identity Swing logic (Assam/Identity based flippings)
+                        identity_multiplier = profile.get("identity_swing", 1.0)
+                        
                         if "sc_st" in shifts:
-                            demo_bonus += shifts["sc_st"] * (p.get("sc_st_pct", 0.0) * 0.1)
+                            demo_bonus += shifts["sc_st"] * (p.get("sc_st_pct", 0.0) * 0.1) * identity_multiplier
                         if "rural" in shifts:
-                            demo_bonus += shifts["rural"] * (p.get("rural_pct", 0.0) * 0.1)
+                            rural_multiplier = profile.get("charismatic_swing", 1.0)
+                            demo_bonus += shifts["rural"] * (p.get("rural_pct", 0.0) * 0.1) * rural_multiplier
                         if "urban" in shifts:
-                            demo_bonus += shifts["urban"] * (p.get("urban_pct", 0.0) * 0.1)
+                            urban_multiplier = profile.get("urban_volatility", 1.0)
+                            demo_bonus += shifts["urban"] * (p.get("urban_pct", 0.0) * 0.1) * urban_multiplier
             
-            p["_vulnerability"] = vuln - demo_bonus
+            # Final Vulnerability: Low score = Flip Target
+            p["_vulnerability"] = vuln + loyalty_bonus - demo_bonus
             vulnerable_seats.append(p)
             
     vulnerable_seats.sort(key=lambda x: x["_vulnerability"])
     
     flipped = 0
+    skipped_strongholds = 0
     for p in vulnerable_seats:
         if not deficit_queue:
             break
+            
         alliance_to_lose = p["_alliance_2021"]
         if surplus_alliances[alliance_to_lose] <= 0:
+            continue
+            
+        # Common Sense Filter: If the seat is a historical stronghold (high resilience),
+        # it is mathematically 'unflippable' despite polling waves.
+        # Threshold: 20.0 (Cumulative Margin + Loyalty Bonus)
+        if p.get("_vulnerability", 0.0) > 20.0:
+            skipped_strongholds += 1
             continue
             
         target_alliance = deficit_queue.pop(0)
@@ -344,6 +391,9 @@ def _apply_macro_target_allocation(
     for p in predictions:
         if "swing_applied" not in p:
             p["swing_applied"] = False
+            
+    if skipped_strongholds > 0:
+        print(f"      Common Sense Filter: Blocked {skipped_strongholds} flips in historical strongholds.")
             
     print(f"      Actually flipped: {flipped} seats")
     return predictions

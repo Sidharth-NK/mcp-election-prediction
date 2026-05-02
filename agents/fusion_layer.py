@@ -60,7 +60,8 @@ async def build_tft_feature_vector(
         "literacy_rate": demographics.get("literacy_rate", 0.0),
         "sc_st_percentage": demographics.get("sc_st_percentage", 0.0),
         "past_winning_margin": history.get("winning_margin_percentage", 0.0),
-        "past_voter_turnout": history.get("voter_turnout_percentage", 0.0)
+        "past_voter_turnout": history.get("voter_turnout_percentage", 0.0),
+        "party_loyalty": float(history.get("consecutive_party_wins", 0))
     }
     
     static_categoricals = {

@@ -186,6 +186,18 @@ def get_historical_baseline(state: str, constituency: str) -> Dict:
             "margin_percentage": float(row["Margin_Percentage"]) if pd.notna(row.get("Margin_Percentage")) else 0.0,
         })
 
+    # Party Loyalty calculation (consecutive wins by the latest winning party)
+    consecutive_wins = 0
+    if winner_row is not None and not winners.empty:
+        latest_winner_party = winner_row["Party"]
+        # Reverse sorted winners list
+        sorted_winners = winners.sort_values("Year", ascending=False)
+        for _, w_row in sorted_winners.iterrows():
+            if w_row["Party"] == latest_winner_party:
+                consecutive_wins += 1
+            else:
+                break
+
     return {
         "status": "success",
         "state": state,
@@ -195,6 +207,7 @@ def get_historical_baseline(state: str, constituency: str) -> Dict:
         "winner": winner_row["Party"] if winner_row is not None else "UNKNOWN",
         "winning_margin_percentage": float(winner_row["Margin_Percentage"]) if winner_row is not None and pd.notna(winner_row.get("Margin_Percentage")) else 0.0,
         "n_elections": len(winners),
+        "consecutive_party_wins": consecutive_wins,
         "rolling_avg_margin": round(rolling_avg_margin, 2),
         "turnout_std": round(turnout_std, 2),
         "last_vote_share": float(winner_row["Vote_Share_Percentage"]) if winner_row is not None and pd.notna(winner_row.get("Vote_Share_Percentage")) else 50.0,

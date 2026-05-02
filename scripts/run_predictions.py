@@ -297,6 +297,7 @@ async def predict_constituency(
         "predicted_winner_party_2026": predicted_winner_party_2026,
         "winning_margin_pct": history["winning_margin_percentage"],
         "rolling_avg_margin": history["rolling_avg_margin"],
+        "party_loyalty": history.get("consecutive_party_wins", 0),
         "voter_turnout_pct": history["voter_turnout_percentage"],
         "turnout_std": history["turnout_std"],
         "last_vote_share": history["last_vote_share"],
