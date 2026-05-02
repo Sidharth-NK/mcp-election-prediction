@@ -264,7 +264,9 @@ def _parse_kerala(soup: BeautifulSoup) -> list:
             continue
 
         # District cell (rowspan)
-        if texts[0] and not texts[0].isdigit():
+        # Strip footnotes like [1] before checking if it's a digit
+        first_clean = re.sub(r'\[.*?\]', '', texts[0]).strip()
+        if first_clean and not first_clean.isdigit():
             district     = texts[0]
             district_url = _extract_link(cells[0])
             cells  = cells[1:]
@@ -309,7 +311,8 @@ def _parse_west_bengal(soup: BeautifulSoup) -> list:
         if not texts:
             continue
 
-        if texts[0] and not texts[0].isdigit():
+        first_clean = re.sub(r'\[.*?\]', '', texts[0]).strip()
+        if first_clean and not first_clean.isdigit():
             district     = texts[0]
             district_url = _extract_link(cells[0])
             cells  = cells[1:]
@@ -350,7 +353,8 @@ def _parse_tamil_nadu(soup: BeautifulSoup) -> list:
         if not texts:
             continue
 
-        if texts[0] and not texts[0].isdigit():
+        first_clean = re.sub(r'\[.*?\]', '', texts[0]).strip()
+        if first_clean and not first_clean.isdigit():
             district     = texts[0]
             district_url = _extract_link(cells[0])
             cells  = cells[1:]
@@ -427,13 +431,18 @@ def _parse_assam(soup: BeautifulSoup) -> list:
         if not texts:
             continue
 
-        if texts[0] and not texts[0].isdigit():
+        first_clean = re.sub(r'\[.*?\]', '', texts[0]).strip()
+        if first_clean and not first_clean.isdigit():
             district     = texts[0]
             district_url = _extract_link(cells[0])
             cells  = cells[1:]
             texts  = texts[1:]
 
         if len(texts) < 3:
+            continue
+
+        num_clean = re.sub(r'\[.*?\]', '', texts[0]).strip()
+        if not num_clean.isdigit():
             continue
 
         # Detect reservation suffix e.g. "Ratabari(SC)"
@@ -677,9 +686,19 @@ class WikiAgent:
     # ── Internal ──────────────────────────────────────────────
 
     def _extract_state(self, state: str) -> None:
-        url  = WIKI_REST_URLS[state]
-        print(f"  Fetching: {url}")
-        soup   = _fetch_soup(url)
+        file_map = {
+            "Kerala": "klae.2026.html",
+            "West Bengal": "wbae.2026.html",
+            "Tamil Nadu": "tnae.2026.html",
+            "Puducherry": "plae.2026.html",
+            "Assam": "alae.2026.html",
+        }
+        
+        filepath = self.html_dir / file_map[state]
+        print(f"  Reading: {filepath}")
+        with open(filepath, "r", encoding="utf-8") as f:
+            soup = BeautifulSoup(f.read(), "html.parser")
+        
         parser = PARSERS[state]
         rows   = parser(soup)
         abbr   = STATE_ABBR[state]

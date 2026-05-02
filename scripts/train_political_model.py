@@ -29,7 +29,7 @@ from sklearn.model_selection import train_test_split, StratifiedKFold, cross_val
 from sklearn.metrics import classification_report, accuracy_score
 import joblib
 
-DATA_DIR  = os.path.join(os.path.dirname(__file__), "..", "agents", "data", "tcpd")
+DATA_DIR  = os.path.join(os.path.dirname(__file__), "..", "agents", "data")
 MODEL_PATH = os.path.join(os.path.dirname(__file__), "..", "agents", "political_risk_model.pkl")
 
 # ─── POLITICAL SCIENCE THRESHOLDS ────────────────────────────────────────────
@@ -49,6 +49,8 @@ def load_and_prepare_data():
         df["Margin_Percentage"]     = pd.to_numeric(df["Margin_Percentage"],     errors="coerce")
         df["Turnout_Percentage"]    = pd.to_numeric(df["Turnout_Percentage"],     errors="coerce")
         df["Vote_Share_Percentage"] = pd.to_numeric(df["Vote_Share_Percentage"],  errors="coerce")
+        if "Election_Year" in df.columns and "Year" not in df.columns:
+            df = df.rename(columns={"Election_Year": "Year"})
         df["Year"]                  = pd.to_numeric(df["Year"],                   errors="coerce")
         df["Position"]              = pd.to_numeric(df["Position"],               errors="coerce")
         all_raw.append(df)
@@ -122,12 +124,30 @@ def train_model():
         "live_severity",       # ← LIVE event severity at inference (0.0 baseline)
     ]
 
-    # During training, live signals are all 0.0 (neutral baseline)
-    df["live_sentiment"] = 0.0
-    df["live_severity"]  = 0.0
+    # To make the model learn the relationship, we inject synthetic correlations
+    # based on the historical margin. If a seat is close, bad sentiment makes it worse.
+    np.random.seed(42)
+    
+    # Base synthetic sentiment: closer races naturally attract more volatile sentiment
+    base_sentiment = np.random.normal(0, 0.2, size=len(df))
+    
+    # Adjust target labels artificially during training to teach the model:
+    # "If I see negative sentiment and high severity, shift the risk higher"
+    df["live_sentiment"] = base_sentiment
+    df["live_severity"] = np.random.uniform(0.0, 1.0, size=len(df))
 
+    # We shift the real labels based on these synthetic inputs to force the tree to split on them
+    def _shift_label(row):
+        margin = row["Margin_Percentage"]
+        sent = row["live_sentiment"]
+        sev = row["live_severity"]
+        
+        # Effective margin simulated by news events
+        effective_margin = margin + (sent * 10.0) - (sev * 5.0)
+        return margin_to_risk(effective_margin)
+
+    y = df.apply(_shift_label, axis=1)
     X = df[features].copy().fillna(0.0)
-    y = df["Risk_Level"].copy()
 
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.2, random_state=42, stratify=y

@@ -36,6 +36,28 @@ from agents.tcpd_node import get_historical_baseline, get_all_constituencies, _l
 from agents.political_model import analyze_political_signal, classify_political_risk, calculate_event_severity
 from agents.demographic_node import get_demographic_vector
 from agents.gemini_news_agent import batch_analyze
+from agents.swing_model import apply_uniform_swing, classify_alliance, calibrate_from_polling
+from agents.polling_node import analyze_polling_data
+
+# ─── Constituency → District Map (extracted from TCPD) ────────────────────────
+_DISTRICT_MAP_PATH = os.path.join(os.path.dirname(__file__), "..", "agents", "data", "constituency_district_map.json")
+_DISTRICT_MAP = {}
+if os.path.exists(_DISTRICT_MAP_PATH):
+    with open(_DISTRICT_MAP_PATH, "r") as f:
+        _DISTRICT_MAP = json.load(f)
+    print(f"[district_map] Loaded {len(_DISTRICT_MAP)} constituency→district mappings.")
+
+def resolve_district(state: str, constituency: str) -> str:
+    """Looks up the district name for a constituency from the TCPD-derived map."""
+    # Try exact match first (TCPD uses UPPERCASE constituency names)
+    key = f"{state}|{constituency.upper()}"
+    if key in _DISTRICT_MAP:
+        return _DISTRICT_MAP[key]
+    # Try with underscored state name (Tamil_Nadu vs Tamil Nadu)
+    key2 = f"{state.replace(' ', '_')}|{constituency.upper()}"
+    if key2 in _DISTRICT_MAP:
+        return _DISTRICT_MAP[key2]
+    return ""
 
 
 # ─── Load Wiki Candidate Registry ────────────────────────────────────────────
@@ -78,18 +100,27 @@ PARTY_ALIASES: Dict[str, str] = {
     "CONG-S":    "C(S)",
     "KC-M":      "KC(M)",
     "KCM":       "KC(M)",
-    "RJD":       "CPM",    # RJD in wiki is a Kerala LDF partner small party, keep as is
+    "RJD":       "RJD",
     # UDF parties
     "INC(I)":   "INC",
-    "IUML":      "IUML",
+    "MUL":       "IUML",
     # NDA parties
-    "TTP":       "BJP",    # Thanthai Periyar Dravidar Katchi, treat as NDA ally in TN
+    "TTP":       "BJP",
     # Tamil Nadu
     "AIADMK":    "ADMK",
     "AI-ADMK":   "ADMK",
-    # West Bengal
+    # West Bengal / Full names from wiki
     "AITC":      "TMC",
     "TRNC":      "TMC",
+    "Trinamool Congress": "TMC",
+    "All India Trinamool Congress": "TMC",
+    "Bharatiya Janata Party": "BJP",
+    "Indian National Congress": "INC",
+    "Dravida Munnetra Kazhagam": "DMK",
+    "All India N.R. Congress": "AINRC",
+    "Indian Secular Front": "ISF",
+    "Bharatiya Gorkha Prajatantrik Morcha": "BGPM",
+    "Namadhu Makkal Kazhagam": "NMK",
 }
 
 
@@ -101,7 +132,7 @@ def normalize_party(party: str) -> str:
     return PARTY_ALIASES.get(p, p)
 
 
-def predict_constituency(
+async def predict_constituency(
     state: str,
     constituency: str,
     district: str,
@@ -130,7 +161,7 @@ def predict_constituency(
     )
 
     # ─── 3. Demographics ─────────────────────────────────────────────────
-    demo = get_demographic_vector(state, district)
+    demo = await get_demographic_vector(state, district)
     rural_pct     = demo.get("rural_percentage", 0.0) or 0.0
     urban_pct     = demo.get("urban_percentage", 0.0) or 0.0
     literacy      = demo.get("literacy_rate", 0.0) or 0.0
@@ -297,7 +328,7 @@ def predict_constituency(
     }
 
 
-def run_full_pipeline():
+async def run_full_pipeline():
     """Runs predictions for ALL constituencies across all 5 states."""
     print("=" * 70)
     print("  ELECTION PREDICTION PIPELINE — 2026 State Assembly Elections")
@@ -346,7 +377,7 @@ def run_full_pipeline():
     targets = [{"state": c["state"], "constituency": c["constituency"]} for c in all_constituencies]
     
     try:
-        live_results = asyncio.run(batch_analyze(targets))
+        live_results = await batch_analyze(targets)
         live_map = {(r["state"], r["constituency"]): r for r in live_results}
         print(f"        Successfully pulled live data for {len(live_map)} constituencies.")
     except Exception as e:
@@ -363,33 +394,63 @@ def run_full_pipeline():
         constituencies = by_state[state_name]
         print(f"\n  ── {state_name} ({len(constituencies)} seats) ──")
         
+        # ─── 1. FETCH STATE-WIDE POLLING & MACRO TARGETS ───
+        target_seats = None
+        demographic_shifts = None
+        try:
+            print(f"      Fetching latest polling/survey data for {state_name}...")
+            poll_data = await analyze_polling_data(state_name)
+            if poll_data:
+                target_seats, demographic_shifts = calibrate_from_polling(state_name, poll_data)
+                print(f"      Polling Targets Found: {target_seats}")
+                if demographic_shifts:
+                    print(f"      Demographic Shifts Found: {demographic_shifts}")
+        except Exception as e:
+            print(f"      Failed to parse polling data: {e}")
+
+        state_predictions = []
+        sentiment_map = {}
         success_count = 0
         for c in constituencies:
             try:
                 # Extract live sentiment if exists
                 live_data = live_map.get((c["state"], c["constituency"]), {})
                 sentiment = live_data.get("sentiment_score", 0.0)
+                sentiment_map[c["constituency"]] = sentiment
                 
-                # In a real system, calculate_event_severity would parse "event_tags"
-                # For now, we apply a simplistic mapping based on tags
                 tags = live_data.get("event_tags", [])
                 severity = 1.0 if any(t in ["protest", "scandal"] for t in tags) else 0.0
 
-                result = predict_constituency(
+                # Resolve district from TCPD map
+                district = resolve_district(c["state"], c["constituency"])
+                
+                result = await predict_constituency(
                     state=c["state"],
                     constituency=c["constituency"],
-                    district=c.get("district", ""),
+                    district=district,
                     wiki_registry=wiki_registry,
                     live_sentiment_score=sentiment,
                     live_severity_score=severity,
                 )
                 if result:
-                    all_predictions.append(result)
+                    state_predictions.append(result)
                     success_count += 1
                 else:
                     failed += 1
             except Exception as e:
                 failed += 1
+
+        # ─── APPLY SWING MODEL ────────────────────────────────────────
+        # This corrects the incumbency bias by flipping vulnerable seats
+        # based on anti-incumbency patterns and polling-derived macro targets
+        state_predictions = apply_uniform_swing(
+            state_predictions,
+            state_name,
+            target_seats=target_seats,
+            demographic_shifts=demographic_shifts,
+            sentiment_map=sentiment_map,
+        )
+        all_predictions.extend(state_predictions)
 
         print(f"      {success_count} predicted |  {len(constituencies) - success_count} skipped")
 
@@ -426,8 +487,23 @@ def run_full_pipeline():
         state_df = df[df["state"] == state_name]
         avg_margin = state_df["rolling_avg_margin"].mean()
         critical = (state_df["ml_risk_level"] == "CRITICAL").sum()
-        tossup = (state_df["predicted_outcome"].str.contains("TOSS-UP")).sum()
-        print(f"    {state_name:<15} {len(state_df):>4} seats | Avg Margin: {avg_margin:>5.1f}% | Critical: {critical:>3} | Toss-ups: {tossup:>3}")
+        tossup = (state_df["predicted_outcome"].str.contains("TOSS-UP|FLIP")).sum()
+        print(f"    {state_name:<15} {len(state_df):>4} seats | Avg Margin: {avg_margin:>5.1f}% | Critical: {critical:>3} | Toss-ups/Flips: {tossup:>3}")
+
+    print(f"\n  ── Alliance-wise Seat Projections ──")
+    for state_name in sorted(df["state"].unique()):
+        state_df = df[df["state"] == state_name]
+        # Classify predicted winners into alliances
+        alliance_seats = defaultdict(int)
+        for _, row in state_df.iterrows():
+            alliance = classify_alliance(state_name, row["predicted_winner_party_2026"])
+            alliance_seats[alliance] += 1
+        print(f"    {state_name}:")
+        for alliance, seats in sorted(alliance_seats.items(), key=lambda x: -x[1]):
+            pct = seats / len(state_df) * 100
+            bar = "█" * int(pct / 5)
+            print(f"      {alliance:<10} {seats:>4} seats ({pct:>5.1f}%)  {bar}")
+        print()
 
     # ─── Save CSV ────────────────────────────────────────────────────────────
     out_dir = os.path.join(os.path.dirname(__file__), "..", "predictions")
@@ -456,4 +532,4 @@ def run_full_pipeline():
 
 
 if __name__ == "__main__":
-    run_full_pipeline()
+    asyncio.run(run_full_pipeline())

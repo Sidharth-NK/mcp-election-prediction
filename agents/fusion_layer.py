@@ -38,7 +38,7 @@ async def build_tft_feature_vector(
     
     # 1. Fetch Static / Historical Data (Synchronously)
     print("  > Fetching Static Variables (Demographics, History)...")
-    demographics = get_demographic_vector(state, district)
+    demographics = await get_demographic_vector(state, district)
     history = get_historical_baseline(state, constituency)
     
     # 2. Fetch Dynamic Data (Async Parallel)
@@ -49,7 +49,7 @@ async def build_tft_feature_vector(
     raw_sentiment, polling = await asyncio.gather(sentiment_task, polling_task)
     
     # Enrich sentiment with political risk model heuristics
-    sentiment_risk = analyze_political_signal(raw_sentiment)
+    sentiment_risk = analyze_political_signal(raw_sentiment, history)
     
     # 3. Assemble the TFT Data Schema
     print("  > Assembling Matrix...")
@@ -76,7 +76,7 @@ async def build_tft_feature_vector(
     }
     
     time_varying_unknown_categoricals = {
-        "risk_level": sentiment_risk.get("risk_level", "LOW")
+        "risk_level": sentiment_risk.get("ml_risk_level", "LOW")
     }
     
     # Parse polling into party-specific momentum features

@@ -1,136 +1,176 @@
 """
-Demographic Node
-================
-Reads the static census demographic dataset and returns a structured
-vector for a given (state, district) pair.
+Demographic Node (Live via Serper API)
+======================================
+Fetches the latest demographic data (rural/urban %, literacy rate) 
+for a given district using Google Search via the Serper API.
 
-This acts as the sociological weighting layer for the TFT forecasting model.
-Data source: Census 2011 (current) — see TODO.md for upgrade path to SHRUG.
-
-Known Limitation:
-  Demographics are based on Census 2011 data, which is ~15 years old.
-  Fast-urbanising constituencies may have drifted significantly.
-  Fix: Integrate DevDataLab SHRUG dataset (nighttime satellite lights)
-  as a proxy for modern urbanisation ratios.
+Results are aggressively cached to disk to prevent exhausting API limits.
 """
 
 import os
 import json
+import httpx
+import asyncio
 from typing import Dict, Optional
+from dotenv import load_dotenv
 
-# Path to the bundled demographics JSON sample
-DATA_FILE = os.path.join(os.path.dirname(__file__), "data", "demographics_sample.json")
+load_dotenv()
 
-# Lazily loaded cache — parsed once, reused for every subsequent call
-_demographics_cache: Optional[Dict] = None
+SERPER_API_KEY = os.getenv("SERPER_API_KEY")
+CACHE_DIR = os.path.join(os.path.dirname(__file__), "data", "demographics_cache")
 
+os.makedirs(CACHE_DIR, exist_ok=True)
 
-def _load_data() -> Dict:
-    """Load and cache the demographics JSON from disk."""
-    global _demographics_cache
-    if _demographics_cache is None:
-        if not os.path.exists(DATA_FILE):
-            raise FileNotFoundError(
-                f"Demographics dataset not found at: {DATA_FILE}\n"
-                "Ensure agents/data/demographics_sample.json is present."
-            )
-        with open(DATA_FILE, "r", encoding="utf-8") as f:
-            _demographics_cache = json.load(f)
-    return _demographics_cache
+def _get_cache_path(state: str, district: str) -> str:
+    """Creates a safe filename for caching district demographics."""
+    safe_state = state.replace(" ", "_").lower()
+    safe_dist = district.replace(" ", "_").lower()
+    return os.path.join(CACHE_DIR, f"{safe_state}_{safe_dist}.json")
 
 
-def get_demographic_vector(state: str, district: str) -> Dict:
+async def _serper_search(query: str) -> str:
+    """Executes a search using Serper API and returns a concatenated snippet block."""
+    if not SERPER_API_KEY:
+        raise ValueError("SERPER_API_KEY is not set in the environment.")
+
+    url = "https://google.serper.dev/search"
+    payload = json.dumps({"q": query, "gl": "in"})
+    headers = {
+        'X-API-KEY': SERPER_API_KEY,
+        'Content-Type': 'application/json'
+    }
+
+    async with httpx.AsyncClient() as client:
+        response = await client.post(url, headers=headers, content=payload, timeout=10.0)
+        response.raise_for_status()
+        data = response.json()
+
+    # Extract text from Answer Box and top organic results
+    snippets = []
+    if "answerBox" in data and "snippet" in data["answerBox"]:
+        snippets.append("ANSWER BOX: " + data["answerBox"]["snippet"])
+        
+    for res in data.get("organic", [])[:4]:
+        if "snippet" in res:
+            snippets.append(res["snippet"])
+
+    return "\n".join(snippets)
+
+
+async def get_demographic_vector(state: str, district: str) -> Dict:
     """
-    Retrieve the static census demographic vector for a given state and district.
-
-    Returns a dict with:
-      - rural_percentage        : % of population in rural areas
-      - urban_percentage        : % of population in urban areas
-      - literacy_rate           : overall literacy rate (%)
-      - sc_st_percentage        : Scheduled Caste + Scheduled Tribe population (%)
-      - major_demographic_note  : qualitative context string
-      - data_source             : provenance tag
-      - warning                 : data-age caveat (Census 2011)
-
-    Falls back gracefully if state or district is not found in the dataset,
-    returning a structured error dict instead of raising an exception —
-    this keeps the MCP tool from crashing the entire server on a cache miss.
+    Fetches the latest demographic vector. Checks local cache first.
+    If not found, queries Serper API and uses Gemini to extract the exact numbers.
     """
+    # 0. Guard: if district is empty/missing, return fallback immediately (zero API cost)
+    if not district or not district.strip():
+        return _fallback_vector(state, district, "No district name provided")
+
+    cache_path = _get_cache_path(state, district)
+    
+    # 1. Check Cache (Zero API cost)
+    if os.path.exists(cache_path):
+        with open(cache_path, "r", encoding="utf-8") as f:
+            return json.load(f)
+
+    print(f"  > [Demographics] No cache for {district}. Fetching live via Serper API...")
+    
+    # 2. Fetch live snippets from Serper
+    query = f"latest rural urban population percentage and literacy rate of {district} district {state}"
     try:
-        data = _load_data()
-    except FileNotFoundError as e:
-        return {"status": "error", "message": str(e)}
+        search_text = await _serper_search(query)
+    except Exception as e:
+        print(f"  > [Demographics] Serper API Error: {e}")
+        fallback = _fallback_vector(state, district, str(e))
+        # Cache the fallback so we don't retry on every constituency
+        with open(cache_path, "w", encoding="utf-8") as f:
+            json.dump(fallback, f, indent=2)
+        return fallback
 
-    # Case-insensitive state lookup
-    state_data: Optional[Dict] = None
-    for s_key in data:
-        if s_key.lower() == state.lower():
-            state_data = data[s_key]
-            break
+    # 3. Extract numbers using Groq (Llama 3.3)
+    GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+    if not GROQ_API_KEY:
+        print("  > [Demographics] Warning: GROQ_API_KEY missing. Cannot parse Serper snippets.")
+        fallback = _fallback_vector(state, district, "Groq key missing.")
+        with open(cache_path, "w", encoding="utf-8") as f:
+            json.dump(fallback, f, indent=2)
+        return fallback
 
-    if state_data is None:
-        available_states = list(data.keys())
-        return {
-            "status": "not_found",
-            "message": f"State '{state}' not found in demographics dataset.",
-            "available_states": available_states,
+    try:
+        from groq import Groq
+
+        client = Groq(api_key=GROQ_API_KEY)
+        prompt = f"""Extract the demographic percentages for {district}, {state} from these search results. If exact numbers are missing, estimate based on the text.
+
+Snippets:
+{search_text}
+
+Return a JSON object with these exact keys:
+- "rural_percentage": float (0-100), default 50.0
+- "urban_percentage": float (0-100), default 50.0
+- "literacy_rate": float (0-100), default 75.0
+- "sc_st_percentage": float (0-100), default 20.0
+- "major_demographic_note": brief note on data year
+"""
+        
+        response = client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[{"role": "user", "content": prompt}],
+            response_format={"type": "json_object"},
+            temperature=0.0,
+        )
+        
+        parsed = json.loads(response.choices[0].message.content)
+        
+        result = {
+            "status": "success",
+            "state": state,
+            "district": district,
+            "rural_percentage": float(parsed.get("rural_percentage", 50.0)),
+            "urban_percentage": float(parsed.get("urban_percentage", 50.0)),
+            "literacy_rate": float(parsed.get("literacy_rate", 75.0)),
+            "sc_st_percentage": float(parsed.get("sc_st_percentage", 20.0)),
+            "major_demographic_note": parsed.get("major_demographic_note", ""),
+            "data_source": "Live Serper API + Groq/Llama",
         }
+        
+        # Save to Cache
+        with open(cache_path, "w", encoding="utf-8") as f:
+            json.dump(result, f, indent=2)
+            
+        return result
 
-    # Case-insensitive district lookup
-    district_data: Optional[Dict] = None
-    for d_key in state_data:
-        if d_key.lower() == district.lower():
-            district_data = state_data[d_key]
-            break
+    except Exception as e:
+        print(f"  > [Demographics] Extraction failed: {e}")
+        fallback = _fallback_vector(state, district, str(e))
+        with open(cache_path, "w", encoding="utf-8") as f:
+            json.dump(fallback, f, indent=2)
+        return fallback
 
-    if district_data is None:
-        available_districts = list(state_data.keys())
-        return {
-            "status": "not_found",
-            "message": f"District '{district}' not found for state '{state}'.",
-            "available_districts": available_districts,
-        }
 
+def _fallback_vector(state: str, district: str, error_msg: str) -> Dict:
+    """Returns a safe fallback vector if APIs fail, preventing pipeline crash."""
     return {
-        "status": "success",
+        "status": "fallback",
         "state": state,
         "district": district,
-        "rural_percentage": district_data.get("rural_percentage"),
-        "urban_percentage": district_data.get("urban_percentage"),
-        "literacy_rate": district_data.get("literacy_rate"),
-        "sc_st_percentage": district_data.get("sc_st_percentage"),
-        "major_demographic_note": district_data.get("major_demographic_note", ""),
-        "data_source": "Census 2011 (India)",
-        "warning": (
-            "Data is based on Census 2011. May not reflect current urbanisation "
-            "in fast-growing constituencies. Upgrade path: SHRUG dataset (DevDataLab)."
-        ),
+        "rural_percentage": 50.0,
+        "urban_percentage": 50.0,
+        "literacy_rate": 75.0,
+        "sc_st_percentage": 20.0,
+        "major_demographic_note": f"Fallback used due to error: {error_msg}",
+        "data_source": "Heuristic Fallback",
     }
 
 
 if __name__ == "__main__":
-    import json as _json
+    async def test():
+        print("=" * 50)
+        print("Demographic Node Test (Serper API)")
+        print("=" * 50)
+        
+        # Ensure your .env has SERPER_API_KEY and GEMINI_API_KEY
+        res = await get_demographic_vector("Kerala", "Thiruvananthapuram")
+        print(json.dumps(res, indent=2))
 
-    print("=" * 50)
-    print("Demographic Node Test")
-    print("=" * 50)
-
-    # Test 1: Valid lookup
-    result = get_demographic_vector("Kerala", "Thiruvananthapuram")
-    print("\n[Test 1] Kerala / Thiruvananthapuram:")
-    print(_json.dumps(result, indent=2))
-
-    # Test 2: Valid lookup
-    result2 = get_demographic_vector("Tamil Nadu", "Chennai")
-    print("\n[Test 2] Tamil Nadu / Chennai:")
-    print(_json.dumps(result2, indent=2))
-
-    # Test 3: Unknown district — graceful fallback
-    result3 = get_demographic_vector("Kerala", "UnknownDistrict")
-    print("\n[Test 3] Unknown district (should return not_found):")
-    print(_json.dumps(result3, indent=2))
-
-    # Test 4: Unknown state — graceful fallback
-    result4 = get_demographic_vector("Goa", "Panaji")
-    print("\n[Test 4] Unknown state (should return not_found):")
-    print(_json.dumps(result4, indent=2))
+    asyncio.run(test())

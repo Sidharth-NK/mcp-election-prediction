@@ -13,7 +13,7 @@ import pandas as pd
 from typing import Dict, List, Optional
 from functools import lru_cache
 
-DATA_DIR = os.path.join(os.path.dirname(__file__), "data", "tcpd")
+DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
 
 # ─── Lazy-loaded Cache ───────────────────────────────────────────────────────
 _tcpd_df: Optional[pd.DataFrame] = None
@@ -21,6 +21,50 @@ _tcpd_df: Optional[pd.DataFrame] = None
 def _normalize_name(s: str) -> str:
     """Lowercase, strip, remove underscores and extra spaces for matching."""
     return s.lower().replace("_", " ").strip()
+
+CONSTITUENCY_ALIASES = {
+    "baghbor": "baghbar",
+    "rangia": "rangiya",
+    "ambalappuzha": "ambalapuzha",
+    "balussery(sc)": "balusseri",
+    "dharmadom": "dharmadam",
+    "koyilandy": "quilandy",
+    "kuttiady": "kuttiadi",
+    "mattanur": "mattannur",
+    "payyanur": "payyannur",
+    "thrikaripur": "trikaripur",
+    "vatakara": "vadakara",
+    "vypin": "vypen",
+    "coimbatore (north)": "coimbatore north",
+    "coimbatore (south)": "coimbatore south",
+    "colachal": "colachel",
+    "gummidipoondi": "gummidipundi",
+    "madhavaram": "madavaram",
+    "manapaarai": "manapparai",
+    "mudhukulathur": "mudukulathur",
+    "palayamkottai": "palayamcottai",
+    "rishivandiyam": "rishivandiam",
+    "sangagiri": "sankari",
+    "senthamangalam(st)": "sendamangalam",
+    "sholinganallur": "shozhinganallur",
+    "sirkazhi(sc)": "sirkali",
+    "thiruthuraipoondi(sc)": "thiruthuraipundi",
+    "thiruverumbur": "thiruverambur",
+    "thiruvidaimarudur(sc)": "thiruvidamarudur",
+    "thiyagarayanagar": "thiagarayanagar",
+    "tiruchengodu": "tiruchengode",
+    "tiruchirappalli (east)": "tiruchirapalli (east)",
+    "tiruchirappalli (west)": "tiruchirapalli (west)",
+    "udumalaipettai": "udumalpet",
+    "virudhachalam": "vridhachalam",
+    "virugambakkam": "virugampakkam",
+    "baisnabnagar": "baishnab nagar",
+    "bangaon dakshin": "bongaon dakshin",
+    "bangaon uttar": "bongaon uttar",
+    "barrackpore": "barrackpur",
+    "chandannagar": "chandannagore",
+    "jaynagar": "jaqynagar",
+}
 
 
 def _load_all_tcpd() -> pd.DataFrame:
@@ -34,6 +78,8 @@ def _load_all_tcpd() -> pd.DataFrame:
         if filename.endswith(".csv"):
             filepath = os.path.join(DATA_DIR, filename)
             df = pd.read_csv(filepath, low_memory=False)
+            if "Election_Year" in df.columns:
+                df.rename(columns={"Election_Year": "Year"}, inplace=True)
             all_data.append(df)
 
     _tcpd_df = pd.concat(all_data, ignore_index=True)
@@ -72,6 +118,7 @@ def get_historical_baseline(state: str, constituency: str) -> Dict:
     df = _load_all_tcpd()
     s_norm = _normalize_name(state)
     c_norm = _normalize_name(constituency)
+    c_norm = CONSTITUENCY_ALIASES.get(c_norm, c_norm)
 
     # Pass 1: exact normalized match
     mask = (df["_state_norm"] == s_norm) & (df["_const_norm"] == c_norm)
@@ -143,7 +190,7 @@ def get_historical_baseline(state: str, constituency: str) -> Dict:
         "status": "success",
         "state": state,
         "constituency": constituency,
-        "past_election_year": int(latest_year),
+        "past_election_year": int(latest_year) if pd.notna(latest_year) else 0,
         "voter_turnout_percentage": float(winner_row["Turnout_Percentage"]) if winner_row is not None and pd.notna(winner_row.get("Turnout_Percentage")) else 0.0,
         "winner": winner_row["Party"] if winner_row is not None else "UNKNOWN",
         "winning_margin_percentage": float(winner_row["Margin_Percentage"]) if winner_row is not None and pd.notna(winner_row.get("Margin_Percentage")) else 0.0,

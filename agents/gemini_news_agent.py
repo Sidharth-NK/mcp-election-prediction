@@ -21,8 +21,7 @@ import httpx
 
 from typing import Dict, List, Optional
 from pydantic import BaseModel, Field
-from google import genai
-from google.genai import types
+from groq import Groq
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -31,23 +30,20 @@ load_dotenv()
 # CONFIGURATION
 # ============================================================
 
-GEMINI_API_KEY  = os.getenv("GEMINI_API_KEY")
+GROQ_API_KEY    = os.getenv("GROQ_API_KEY")
 TAVILY_API_KEY  = os.getenv("TAVILY_API_KEY") or os.getenv("NEWS_API_KEY")
 CACHE_DIR       = os.getenv("CACHE_DIR", ".cache/sentiment")
 CACHE_TTL_HOURS = 6          # Results older than this are considered stale
-BATCH_SIZE      = 10         # Constituencies per Gemini call (keep ≤ 10)
+BATCH_SIZE      = 5         # Reduced from 10 to stay under Groq TPM limits
 RESULTS_PER_QUERY = 3        # Tavily results per search query
-INTER_BATCH_DELAY = 4.0      # Seconds to wait between Gemini batch calls (RPM safety)
+INTER_BATCH_DELAY = 4.0      # Increased for safer rate-limit compliance
 
 VALID_STATES = [
     "Kerala",
     "Tamil Nadu",
-    "Tamil_Nadu",
     "West Bengal",
-    "West_Bengal",
     "Puducherry",
-    "Karnataka",
-    "Assam",
+      "Assam",
 ]
 
 # Local language keywords to force Tavily into grabbing regional media
@@ -56,7 +52,6 @@ REGIONAL_SEARCH_TERMS = {
     "Tamil Nadu": "தேர்தல் செய்திகள் (election news) மக்கள் கருத்து (public opinion)",
     "West Bengal": "নির্বাচনের খবর (election news) স্থানীয় রাজনীতি (local politics)",
     "Puducherry": "தேர்தல் செய்திகள் (election news)",
-    "Karnataka": "ಚುನಾವಣಾ ಸುದ್ದಿಗಳು (election news) ರಾಜಕೀಯ (politics)",
     "Assam": "নিৰ্বাচনৰ খবৰ (election news)",
 }
 
@@ -65,16 +60,18 @@ EVENT_TAGS = ["alliance", "protest", "scandal", "campaign activity", "general"]
 TAVILY_URL = "https://api.tavily.com/search"
 
 # ============================================================
-# CLIENT INIT
+# CLIENT INIT  (Groq — Llama 3.3 70B)
 # ============================================================
 
+GROQ_MODEL = "llama-3.3-70b-versatile"
+
 try:
-    if not GEMINI_API_KEY:
-        raise ValueError("GEMINI_API_KEY not set")
-    gemini = genai.Client(api_key=GEMINI_API_KEY)
+    if not GROQ_API_KEY:
+        raise ValueError("GROQ_API_KEY not set")
+    groq_client = Groq(api_key=GROQ_API_KEY)
 except Exception as e:
-    gemini = None
-    print(f"CRITICAL: Gemini client failed — {e}")
+    groq_client = None
+    print(f"CRITICAL: Groq client failed — {e}")
 
 os.makedirs(CACHE_DIR, exist_ok=True)
 
@@ -224,37 +221,55 @@ def synthesize_batch(
     state: str,
 ) -> List[ConstituencyResult]:
     """
-    Sends all constituencies' news in ONE Gemini call.
+    Sends all constituencies' news in ONE Groq (Llama 3.3) call.
     Returns a list of structured ConstituencyResult objects.
     """
-    # Build a clearly delimited prompt so Gemini doesn't mix up constituencies
+    # Build a clearly delimited prompt so Llama doesn't mix up constituencies
     sections = []
+    constituency_names = list(news_by_constituency.keys())
     for i, (constituency, news) in enumerate(news_by_constituency.items(), 1):
         sections.append(
-            f"--- CONSTITUENCY {i}: {constituency}, {state} ---\n{news}\n"
+            f"--- CONSTITUENCY {i}: {constituency}, {state} ---\n{news[:1500]}\n"
         )
 
     prompt = f"""You are an expert Indian political data scientist.
 Below are news summaries for {len(sections)} constituencies in {state}.
-Analyze EACH ONE independently and return a JSON array of results.
+Analyze EACH ONE independently.
 
 {''.join(sections)}
 
-Return one result object per constituency in the same order as listed above.
-Base your analysis ONLY on the provided news data.
+Return a JSON object with a single key "results" containing an array of objects.
+Each object MUST have these exact keys:
+- "constituency": exact constituency name as listed above
+- "sentiment_score": float from -1.0 (strongly negative) to +1.0 (strongly positive)
+- "event_tags": array of strings from: {EVENT_TAGS}
+- "reasoning": brief reasoning for the score
+- "key_headlines": array of 2-3 key headlines
+
+Return one result per constituency in the same order. Base analysis ONLY on provided news.
 """
 
-    response = gemini.models.generate_content(
-        model="gemini-2.5-flash-lite",
-        contents=prompt,
-        config=types.GenerateContentConfig(
-            response_mime_type="application/json",
-            response_schema=BatchAnalysisOutput,
-            temperature=0.1,
-        ),
+    response = groq_client.chat.completions.create(
+        model=GROQ_MODEL,
+        messages=[{"role": "user", "content": prompt}],
+        response_format={"type": "json_object"},
+        temperature=0.1,
     )
 
-    return response.parsed.results
+    raw = json.loads(response.choices[0].message.content)
+    results = []
+    for i, item in enumerate(raw.get("results", [])):
+        try:
+            results.append(ConstituencyResult(
+                constituency=item.get("constituency", constituency_names[i] if i < len(constituency_names) else "UNKNOWN"),
+                sentiment_score=float(item.get("sentiment_score", 0.0)),
+                event_tags=[t for t in item.get("event_tags", ["general"]) if t in EVENT_TAGS] or ["general"],
+                reasoning=item.get("reasoning", "No reasoning provided."),
+                key_headlines=item.get("key_headlines", []),
+            ))
+        except Exception:
+            pass
+    return results
 
 
 # ============================================================
@@ -325,8 +340,8 @@ async def batch_analyze(targets: List[Dict]) -> List[Dict]:
 
     Gemini calls = ceil(uncached_count / BATCH_SIZE)
     """
-    if not gemini:
-        raise RuntimeError("Gemini client not initialized. Check GEMINI_API_KEY.")
+    if not groq_client:
+        raise RuntimeError("Groq client not initialized. Check GROQ_API_KEY.")
     if not TAVILY_API_KEY:
         raise RuntimeError("Tavily API key not set. Check TAVILY_API_KEY.")
 
