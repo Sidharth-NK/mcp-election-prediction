@@ -1,0 +1,15 @@
+{
+  "state": "Tamil Nadu",
+  "constituency": "Srirangam",
+  "date": "2026-05-02",
+  "sentiment_score": -0.5,
+  "event_tags": [
+    "scandal",
+    "protest"
+  ],
+  "reasoning": "Similar to previous constituencies, API errors indicate a lack of reliable information, resulting in a neutral sentiment score.",
+  "key_headlines": [
+    "Srirangam election news hampered by API issues",
+    "Tamil Nadu election analysis hindered for Srirangam"
+  ]
+}

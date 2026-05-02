@@ -1,0 +1,15 @@
+{
+  "state": "West Bengal",
+  "constituency": "Chopra",
+  "date": "2026-05-02",
+  "sentiment_score": -0.7,
+  "event_tags": [
+    "scandal",
+    "protest"
+  ],
+  "reasoning": "Similar to Murshidabad, the lack of reliable information from API calls leads to a negative sentiment score. Chopra's politics seem to be plagued by controversy.",
+  "key_headlines": [
+    "Chopra election news hindered by API issues",
+    "Chopra local politics rocked by scandal"
+  ]
+}

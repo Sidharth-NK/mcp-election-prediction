@@ -1,0 +1,15 @@
+{
+  "state": "West Bengal",
+  "constituency": "Mahisadal",
+  "date": "2026-05-02",
+  "sentiment_score": -0.1,
+  "event_tags": [
+    "campaign activity",
+    "general"
+  ],
+  "reasoning": "Mahisadal's politics seem to be focused on general campaign activities, resulting in a slightly negative sentiment score. However, the lack of reliable information from API calls limits the accuracy of this assessment.",
+  "key_headlines": [
+    "Mahisadal election news highlights campaign activities",
+    "Mahisadal local politics in a state of flux"
+  ]
+}

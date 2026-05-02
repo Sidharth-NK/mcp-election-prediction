@@ -1,0 +1,16 @@
+{
+  "state": "West Bengal",
+  "constituency": "Nabagram",
+  "date": "2026-05-02",
+  "sentiment_score": 0.1,
+  "event_tags": [
+    "protest",
+    "general"
+  ],
+  "reasoning": "The sentiment is slightly positive due to high voter turnout, but violence and allegations of violence have a negative impact.",
+  "key_headlines": [
+    "90.37 Per Cent Voter Turnout At Nabagram Assembly Constituency",
+    "Nabagram Assembly Election 2026 - The Hindu",
+    "Bengal voting turns tense as violence, identity politics dominate"
+  ]
+}

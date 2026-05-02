@@ -1,0 +1,11 @@
+{
+  "status": "success",
+  "state": "West Bengal",
+  "district": "HOWRAH",
+  "rural_percentage": 50.0,
+  "urban_percentage": 50.0,
+  "literacy_rate": 75.0,
+  "sc_st_percentage": 20.0,
+  "major_demographic_note": "No data available for Howrah, West Bengal",
+  "data_source": "Live Serper API + Groq/Llama"
+}

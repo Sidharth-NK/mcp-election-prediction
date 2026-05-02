@@ -1,14 +1,12 @@
 """
 Feature Fusion Layer
-====================
-Aligns static, dynamic, and historical nodes into a unified multidimensional
-feature vector for the Temporal Fusion Transformer (TFT).
 
-This layer acts as the data pipeline, gathering parameters from all 
-MCP nodes and formatting them specifically for PyTorch Forecasting's TFT:
+Aligns static, dynamic, and historical nodes into a unified multidimensional feature vector for the Temporal Fusion Transformer (TFT).
+
+Gathering parameters from all MCP nodes and formatting them specifically for PyTorch Forecasting's TFT:
 - Static Reals: Demographics, Historical margins
 - Static Categoricals: Area names, Past winner
-- Time-Varying Unknown Reals: Sentiment Score, Event Severity, Polling %
+- Time-Varying Unknown Reals: Sentiment Score, Event Severity, Polling percent
 - Time-Varying Unknown Categoricals: Risk Level
 """
 
@@ -36,12 +34,12 @@ async def build_tft_feature_vector(
     """
     print(f"--- Fusing Features for {constituency}, {district}, {state} ---")
     
-    # 1. Fetch Static / Historical Data (Synchronously)
+    # Fetch Static / Historical Data (Synchronously)
     print("  > Fetching Static Variables (Demographics, History)...")
     demographics = await get_demographic_vector(state, district)
     history = get_historical_baseline(state, constituency)
     
-    # 2. Fetch Dynamic Data (Async Parallel)
+    # Fetch Dynamic Data (Async Parallel)
     print("  > Fetching Time-Varying Variables (Sentiment, Polling)...")
     sentiment_task = analyze_constituency(state, constituency)
     polling_task = analyze_polling_data(state)
@@ -51,7 +49,7 @@ async def build_tft_feature_vector(
     # Enrich sentiment with political risk model heuristics
     sentiment_risk = analyze_political_signal(raw_sentiment, history)
     
-    # 3. Assemble the TFT Data Schema
+    # Assemble the TFT Data Schema
     print("  > Assembling Matrix...")
     
     static_reals = {

@@ -1,0 +1,16 @@
+{
+  "state": "West Bengal",
+  "constituency": "Bangaon Uttar",
+  "date": "2026-05-02",
+  "sentiment_score": -0.5,
+  "event_tags": [
+    "protest",
+    "scandal"
+  ],
+  "reasoning": "The sentiment is negative due to low voter turnout and concerns about terror and misrule.",
+  "key_headlines": [
+    "18.26% Voter Turnout At Bongaon Uttar Assembly Constituency Till",
+    "Addressing a massive public rally in Bangaon, PM Modi labelled the current government's tenure as 'Jungle Raj'",
+    "West Bengal voted at a moment that felt finely balanced"
+  ]
+}

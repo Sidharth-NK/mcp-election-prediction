@@ -1,0 +1,16 @@
+{
+  "state": "West Bengal",
+  "constituency": "Farakka",
+  "date": "2026-05-02",
+  "sentiment_score": -0.3,
+  "event_tags": [
+    "scandal",
+    "general"
+  ],
+  "reasoning": "The sentiment score is slightly negative due to the presence of scandals, including vandalism and police action against a TMC MLA, but the overall tone is more general and neutral.",
+  "key_headlines": [
+    "EC Orders Police Action Against TMC MLA Manirul Islam in Farakka",
+    "Nandalal Ghosh - Farakka Assembly election results",
+    "Latest News, Photos, Videos on Farakka"
+  ]
+}

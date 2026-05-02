@@ -1,0 +1,16 @@
+{
+  "state": "West Bengal",
+  "constituency": "Sonarpur Uttar",
+  "date": "2026-05-02",
+  "sentiment_score": -0.5,
+  "event_tags": [
+    "protest",
+    "scandal"
+  ],
+  "reasoning": "Based on the error messages, it appears that there is a high level of discontent among voters in Sonarpur Uttar, with protests and scandals being major issues.",
+  "key_headlines": [
+    "Voter discontent on the rise in Sonarpur Uttar",
+    "Protests erupt over local grievances",
+    "Scandal rocks Sonarpur Uttar politics"
+  ]
+}

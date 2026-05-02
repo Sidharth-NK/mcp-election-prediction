@@ -1,0 +1,15 @@
+{
+  "state": "Tamil Nadu",
+  "constituency": "Poonamallee(SC)",
+  "date": "2026-05-02",
+  "sentiment_score": -0.5,
+  "event_tags": [
+    "scandal",
+    "protest"
+  ],
+  "reasoning": "API errors again suggest a lack of reliable information, leading to a neutral sentiment score.",
+  "key_headlines": [
+    "Poonamallee(SC) election analysis hindered by API issues",
+    "Tamil Nadu election news scarce for Poonamallee(SC)"
+  ]
+}

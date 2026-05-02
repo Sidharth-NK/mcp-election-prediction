@@ -1,0 +1,16 @@
+{
+  "state": "West Bengal",
+  "constituency": "Tufanganj",
+  "date": "2026-05-02",
+  "sentiment_score": 0.1,
+  "event_tags": [
+    "general",
+    "campaign activity"
+  ],
+  "reasoning": "The sentiment score is neutral to slightly positive due to the high voter turnout and the presence of campaign activities, but the overall tone is more general and lacks strong emotions.",
+  "key_headlines": [
+    "Chaos in Tufanganj ahead of West Bengal elections, TMC",
+    "93.21 Per Cent Voter Turnout At Tufanganj Assembly Constituency",
+    "Tufanganj Assembly Election 2026"
+  ]
+}

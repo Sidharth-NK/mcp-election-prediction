@@ -1,6 +1,5 @@
 """
-Political Risk Model (ML-Powered v3)
-=====================================
+Political Risk Model
 Loads the trained Gradient Boosting model and classifies constituency risk
 using historical TCPD features + live Gemini sentiment/events.
 
@@ -26,7 +25,7 @@ try:
 except Exception as e:
     print(f"[political_model] Warning: ML model not loaded ({e}). Using heuristic fallback.")
 
-# ─── Event Severity Map ──────────────────────────────────────────────────────
+# Event Severity Map
 EVENT_SEVERITY_MAP = {
     "scandal":           1.0,
     "protest":           0.6,
@@ -69,7 +68,7 @@ def classify_political_risk(
         except Exception as e:
             print(f"[political_model] Prediction error: {e}. Falling back.")
 
-    # ─── Heuristic Fallback (domain-expert thresholds) ────────────────────
+    # Heuristic Fallback (domain-expert thresholds) 
     if rolling_avg_margin < 3.0:
         return "CRITICAL"
     elif rolling_avg_margin < 7.0:
@@ -132,6 +131,6 @@ if __name__ == "__main__":
         "n_elections":        5,
     }
     result = analyze_political_signal(sample_gemini, sample_history)
-    print("====== Political Model Output (ML v3) ======")
+    print("====== Political Model Output ======")
     for k, v in result.items():
         print(f"  {k}: {v}")

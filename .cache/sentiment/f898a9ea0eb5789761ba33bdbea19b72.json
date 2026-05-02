@@ -1,0 +1,16 @@
+{
+  "state": "West Bengal",
+  "constituency": "Panihati",
+  "date": "2026-05-02",
+  "sentiment_score": -0.5,
+  "event_tags": [
+    "protest",
+    "scandal"
+  ],
+  "reasoning": "The sentiment score is negative due to the presence of protests and scandals in the constituency, including the RG Kar case, which has turned the election into a high-stakes battle.",
+  "key_headlines": [
+    "Chaos in Panihati, BJP Candidate Faces Protest in North 24 Parganas",
+    "RG Kar case turns Panihati election into high-stakes political battle in Bengal",
+    "West Bengal phase 2 voting LIVE: Chaos in Panihati, BJP candidate"
+  ]
+}

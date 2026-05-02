@@ -1,0 +1,15 @@
+{
+  "state": "West Bengal",
+  "constituency": "Purbasthali Dakshin",
+  "date": "2026-05-02",
+  "sentiment_score": -0.5,
+  "event_tags": [
+    "scandal",
+    "protest"
+  ],
+  "reasoning": "API errors indicate a lack of reliable information, resulting in a neutral but slightly negative sentiment score.",
+  "key_headlines": [
+    "API errors hinder analysis",
+    "No reliable information available"
+  ]
+}

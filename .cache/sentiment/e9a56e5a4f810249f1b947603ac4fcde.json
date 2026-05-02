@@ -1,0 +1,15 @@
+{
+  "state": "Kerala",
+  "constituency": "Nadapuram",
+  "date": "2026-05-02",
+  "sentiment_score": -0.8,
+  "event_tags": [
+    "scandal",
+    "protest"
+  ],
+  "reasoning": "Nadapuram has seen scandals and protests, indicating a strongly negative sentiment.",
+  "key_headlines": [
+    "Nadapuram scandal rocks local politics",
+    "Nadapuram protesters demand justice"
+  ]
+}

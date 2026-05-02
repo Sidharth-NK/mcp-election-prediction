@@ -1,0 +1,15 @@
+{
+  "state": "West Bengal",
+  "constituency": "Nalhati",
+  "date": "2026-05-01",
+  "sentiment_score": 0.0,
+  "event_tags": [
+    "general"
+  ],
+  "reasoning": "No relevant news or data available to analyze sentiment.",
+  "key_headlines": [
+    "No news available",
+    "Data not found",
+    "Error in API request"
+  ]
+}

@@ -1,10 +1,9 @@
 """
 Demographic Node (Live via Serper API)
-======================================
+
 Fetches the latest demographic data (rural/urban %, literacy rate) 
 for a given district using Google Search via the Serper API.
 
-Results are aggressively cached to disk to prevent exhausting API limits.
 """
 
 import os
@@ -22,14 +21,14 @@ CACHE_DIR = os.path.join(os.path.dirname(__file__), "data", "demographics_cache"
 os.makedirs(CACHE_DIR, exist_ok=True)
 
 def _get_cache_path(state: str, district: str) -> str:
-    """Creates a safe filename for caching district demographics."""
+    # Creates a safe filename for caching district demographics.
     safe_state = state.replace(" ", "_").lower()
     safe_dist = district.replace(" ", "_").lower()
     return os.path.join(CACHE_DIR, f"{safe_state}_{safe_dist}.json")
 
 
 async def _serper_search(query: str) -> str:
-    """Executes a search using Serper API and returns a concatenated snippet block."""
+    # Executes a search using Serper API and returns a concatenated snippet block.
     if not SERPER_API_KEY:
         raise ValueError("SERPER_API_KEY is not set in the environment.")
 
@@ -62,20 +61,20 @@ async def get_demographic_vector(state: str, district: str) -> Dict:
     Fetches the latest demographic vector. Checks local cache first.
     If not found, queries Serper API and uses Gemini to extract the exact numbers.
     """
-    # 0. Guard: if district is empty/missing, return fallback immediately (zero API cost)
+    # guard if district is empty/missing, return fallback immediately (zero API cost)
     if not district or not district.strip():
         return _fallback_vector(state, district, "No district name provided")
 
     cache_path = _get_cache_path(state, district)
     
-    # 1. Check Cache (Zero API cost)
+    # Check Cache (Zero API cost)
     if os.path.exists(cache_path):
         with open(cache_path, "r", encoding="utf-8") as f:
             return json.load(f)
 
     print(f"  > [Demographics] No cache for {district}. Fetching live via Serper API...")
     
-    # 2. Fetch live snippets from Serper
+    # Fetch live snippets from Serper
     query = f"latest rural urban population percentage and literacy rate of {district} district {state}"
     try:
         search_text = await _serper_search(query)
@@ -87,7 +86,7 @@ async def get_demographic_vector(state: str, district: str) -> Dict:
             json.dump(fallback, f, indent=2)
         return fallback
 
-    # 3. Extract numbers using Groq (Llama 3.3)
+    # Extract numbers using Groq (Llama 3.3)
     GROQ_API_KEY = os.getenv("GROQ_API_KEY")
     if not GROQ_API_KEY:
         print("  > [Demographics] Warning: GROQ_API_KEY missing. Cannot parse Serper snippets.")
@@ -134,7 +133,6 @@ Return a JSON object with these exact keys:
             "data_source": "Live Serper API + Groq/Llama",
         }
         
-        # Save to Cache
         with open(cache_path, "w", encoding="utf-8") as f:
             json.dump(result, f, indent=2)
             
@@ -169,7 +167,6 @@ if __name__ == "__main__":
         print("Demographic Node Test (Serper API)")
         print("=" * 50)
         
-        # Ensure your .env has SERPER_API_KEY and GEMINI_API_KEY
         res = await get_demographic_vector("Kerala", "Thiruvananthapuram")
         print(json.dumps(res, indent=2))
 

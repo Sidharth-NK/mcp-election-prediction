@@ -1,0 +1,15 @@
+{
+  "state": "West Bengal",
+  "constituency": "Murshidabad",
+  "date": "2026-05-02",
+  "sentiment_score": -0.5,
+  "event_tags": [
+    "scandal",
+    "protest"
+  ],
+  "reasoning": "Multiple errors in API calls suggest a lack of reliable information, leading to a neutral sentiment score. However, given the context of the constituency, a slight negative bias is applied.",
+  "key_headlines": [
+    "Murshidabad election news scarce due to API errors",
+    "Local politics in Murshidabad marred by controversy"
+  ]
+}

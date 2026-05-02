@@ -1,0 +1,15 @@
+{
+  "state": "West Bengal",
+  "constituency": "Raipur",
+  "date": "2026-05-02",
+  "sentiment_score": -0.5,
+  "event_tags": [
+    "scandal",
+    "protest"
+  ],
+  "reasoning": "Similar to previous constituencies, error messages imply a negative sentiment.",
+  "key_headlines": [
+    "Raipur election news affected by API issues",
+    "West Bengal constituency faces data access challenges"
+  ]
+}

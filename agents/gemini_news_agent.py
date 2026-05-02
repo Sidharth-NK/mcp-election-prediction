@@ -1,14 +1,10 @@
 """
-Political Sentiment Analyzer — v2 (Optimized)
-=============================================
-Optimizations applied vs v1:
-  1. External search (Tavily) — removes Gemini's search grounding multiplier
-  2. Constituency batching  — 10 constituencies per Gemini call (10× fewer LLM calls)
+Political Sentiment Analyzer 
+  1. External search grounding (Tavily) 
+  2. Constituency batching  — 10 constituencies per Gemini call
   3. 6-hour TTL file cache  — repeat runs within same half-day cost 0 API calls
 
-Request math for 50 constituencies, polled twice/day:
-  Before (v1 original) : 200 Gemini calls/day
-  After  (v2 this file): ~10 Gemini calls/day  (5 batches × 2 polls, cached after first run)
+Request math for 50 constituencies, polled twice/day: approx 10 Gemini calls/day 
 """
 
 import os
@@ -26,17 +22,13 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# ============================================================
-# CONFIGURATION
-# ============================================================
-
 GROQ_API_KEY    = os.getenv("GROQ_API_KEY")
 TAVILY_API_KEY  = os.getenv("TAVILY_API_KEY") or os.getenv("NEWS_API_KEY")
 CACHE_DIR       = os.getenv("CACHE_DIR", ".cache/sentiment")
-CACHE_TTL_HOURS = 6          # Results older than this are considered stale
-BATCH_SIZE      = 5         # Reduced from 10 to stay under Groq TPM limits
-RESULTS_PER_QUERY = 3        # Tavily results per search query
-INTER_BATCH_DELAY = 4.0      # Increased for safer rate-limit compliance
+CACHE_TTL_HOURS = 6           # Results older than this are considered stale
+BATCH_SIZE      = 5           # Reduced from 10 to stay under Groq TPM limits
+RESULTS_PER_QUERY = 3         # Tavily results per search query
+INTER_BATCH_DELAY = 4.0       # Increased for safer rate-limit compliance
 
 VALID_STATES = [
     "Kerala",
@@ -59,10 +51,6 @@ EVENT_TAGS = ["alliance", "protest", "scandal", "campaign activity", "general"]
 
 TAVILY_URL = "https://api.tavily.com/search"
 
-# ============================================================
-# CLIENT INIT  (Groq — Llama 3.3 70B)
-# ============================================================
-
 GROQ_MODEL = "llama-3.1-8b-instant"
 
 try:
@@ -74,10 +62,6 @@ except Exception as e:
     print(f"CRITICAL: Groq client failed — {e}")
 
 os.makedirs(CACHE_DIR, exist_ok=True)
-
-# ============================================================
-# SCHEMAS
-# ============================================================
 
 class ConstituencyResult(BaseModel):
     """Sentiment result for a single constituency."""
@@ -96,10 +80,6 @@ class BatchAnalysisOutput(BaseModel):
     """Gemini returns one of these per batch call — a list of results."""
     results: List[ConstituencyResult]
 
-
-# ============================================================
-# CACHE  (file-based, 6-hour TTL)
-# ============================================================
 
 def _cache_key(state: str, constituency: str) -> str:
     """
@@ -127,10 +107,7 @@ def cache_set(state: str, constituency: str, data: Dict) -> None:
         json.dump(data, f, indent=2)
 
 
-# ============================================================
-# STEP 1 — PARALLEL TAVILY SEARCH  (0 Gemini calls)
-# ============================================================
-
+# parallel tavily search
 def _build_queries(
     state: str,
     constituency: str,
@@ -212,10 +189,8 @@ async def fetch_search_results_for_batch(batch: List[Dict]) -> Dict[str, str]:
     return dict(pairs)
 
 
-# ============================================================
-# STEP 2 — BATCHED GEMINI SYNTHESIS  (1 call per 10 constituencies)
-# ============================================================
 
+# BATCHED GEMINI SYNTHESIS  (1 call per 10 constituencies)
 def synthesize_batch(
     news_by_constituency: Dict[str, str],
     state: str,
@@ -224,7 +199,7 @@ def synthesize_batch(
     Sends all constituencies' news in ONE Groq (Llama 3.3) call.
     Returns a list of structured ConstituencyResult objects.
     """
-    # Build a clearly delimited prompt so Llama doesn't mix up constituencies
+    # Built a clearly delimited prompt so Llama doesn't mix up constituencies
     sections = []
     constituency_names = list(news_by_constituency.keys())
     for i, (constituency, news) in enumerate(news_by_constituency.items(), 1):
@@ -271,10 +246,6 @@ Return one result per constituency in the same order. Base analysis ONLY on prov
             pass
     return results
 
-
-# ============================================================
-# MAIN PUBLIC API
-# ============================================================
 
 async def analyze_constituency(
     state: str,
@@ -350,7 +321,7 @@ async def batch_analyze(targets: List[Dict]) -> List[Dict]:
         if t["state"] not in VALID_STATES:
             raise ValueError(f"Invalid state '{t['state']}'. Allowed: {VALID_STATES}")
 
-    # --- Split into cached and uncached ---
+    # split into cached and uncached 
     cached_results: Dict[str, Dict] = {}
     uncached: List[Dict] = []
 
@@ -364,16 +335,16 @@ async def batch_analyze(targets: List[Dict]) -> List[Dict]:
 
     print(f"\nCache: {len(cached_results)} hits, {len(uncached)} misses")
 
-    # --- Process uncached in batches (Grouped by state!) ---
+    #  Process uncached in batches (Grouped by state!) 
     fresh_results: Dict[str, Dict] = {}
     
-    # 1. Group targets by state
+    # Group targets by state
     from collections import defaultdict
     targets_by_state = defaultdict(list)
     for t in uncached:
         targets_by_state[t["state"]].append(t)
 
-    # 2. Build purely separated batches
+    #  Build purely separated batches
     batches = []
     for state_group in targets_by_state.values():
         for i in range(0, len(state_group), BATCH_SIZE):
@@ -418,25 +389,21 @@ async def batch_analyze(targets: List[Dict]) -> List[Dict]:
             print(f"  Waiting {INTER_BATCH_DELAY}s before next batch...")
             await asyncio.sleep(INTER_BATCH_DELAY)
 
-    # --- Merge and return in original order ---
     all_results = {**cached_results, **fresh_results}
     return [all_results[t["constituency"]] for t in targets if t["constituency"] in all_results]
 
 
-# ============================================================
-# USAGE EXAMPLE
-# ============================================================
-
+#usage example
 if __name__ == "__main__":
     async def run_tests():
-        # --- Single constituency ---
+        # single constituency 
         print("=" * 50)
         print("Single constituency test")
         print("=" * 50)
         result = await analyze_constituency("Kerala", "Thiruvananthapuram")
         print(json.dumps(result, indent=2))
 
-        # --- Multiple constituencies (efficient batch mode) ---
+        # Multiple constituencies (efficient batch mode) 
         print("\n" + "=" * 50)
         print("Batch test — 3 constituencies, 1-2 Gemini calls")
         print("=" * 50)

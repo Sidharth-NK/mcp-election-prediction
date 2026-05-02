@@ -1,0 +1,16 @@
+{
+  "state": "West Bengal",
+  "constituency": "Budge Budge",
+  "date": "2026-05-02",
+  "sentiment_score": 0.2,
+  "event_tags": [
+    "protest",
+    "general"
+  ],
+  "reasoning": "The sentiment is slightly positive due to high voter turnout, but protests and accidents have a negative impact.",
+  "key_headlines": [
+    "92.12 Percent Voter Turnout At Budge Budge Assembly",
+    "\u099c\u09c7\u09b2\u09be\u09b0 \u09ac\u099c\u09ac\u099c\u09c7 \u09a4\u09c7\u09b2\u09c7\u09b0 \u099f\u09cd\u09af\u09be\u0999\u09cd\u0995\u09be\u09b0\u09c7 \u09ad\u09af\u09bc\u0999\u09cd\u0995\u09b0 \u09ac\u09bf\u09b8\u09cd\u09ab\u09cb\u09b0\u09a3",
+    "Bengal Assembly Elections 2026 Phase 2 Voting LIVE Updates"
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "state": "West Bengal",
+  "constituency": "Hariharpara",
+  "date": "2026-05-02",
+  "sentiment_score": -0.5,
+  "event_tags": [
+    "scandal",
+    "protest"
+  ],
+  "reasoning": "Again, the API errors suggest a lack of reliable information, leading to a neutral sentiment score. However, given the context of the errors, it's likely that the constituency is experiencing some level of discontent, hence the negative score.",
+  "key_headlines": [
+    "API errors hinder Hariharpara election analysis",
+    "Hariharpara voters frustrated with lack of information"
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "state": "West Bengal",
+  "constituency": "Kushmandi",
+  "date": "2026-05-02",
+  "sentiment_score": -0.9,
+  "event_tags": [
+    "scandal",
+    "protest"
+  ],
+  "reasoning": "Kushmandi's politics appear to be severely impacted by API errors, leading to a strongly negative sentiment score. Scandals and protests seem to dominate the local news.",
+  "key_headlines": [
+    "Kushmandi election news marred by scandal and protests",
+    "Kushmandi local politics in shambles"
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "state": "West Bengal",
+  "constituency": "Baruipur Paschim",
+  "date": "2026-05-02",
+  "sentiment_score": -0.3,
+  "event_tags": [
+    "protest",
+    "campaign activity"
+  ],
+  "reasoning": "While API errors persist, Baruipur Paschim's politics seem to be focused on campaign activities and protests, resulting in a slightly negative sentiment score.",
+  "key_headlines": [
+    "Baruipur Paschim election news highlights campaign activities",
+    "Protests erupt in Baruipur Paschim"
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "state": "Kerala",
+  "constituency": "Thiruvananthapuram",
+  "date": "2026-05-01",
+  "sentiment_score": 0.0,
+  "event_tags": [
+    "general"
+  ],
+  "reasoning": "No relevant information available due to API errors, resulting in a neutral sentiment score.",
+  "key_headlines": [
+    "No data available due to API errors",
+    "API errors prevent analysis of voter sentiment",
+    "Insufficient data for constituency analysis"
+  ]
+}

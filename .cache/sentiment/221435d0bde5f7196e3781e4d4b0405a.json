@@ -1,0 +1,16 @@
+{
+  "state": "West Bengal",
+  "constituency": "Jagatdal",
+  "date": "2026-05-02",
+  "sentiment_score": -0.4,
+  "event_tags": [
+    "protest",
+    "scandal"
+  ],
+  "reasoning": "Reports of violence, clashes, and injuries indicate a negative sentiment in the constituency.",
+  "key_headlines": [
+    "Tensions Flared in Jagatdal as Workers of the All India Trinamool Clash with BJP",
+    "Trinamool, BJP Workers Clash in Bengal's Jagatdal; CAPF Jawan Injured",
+    "Violence in West Bengal's Jagatdal Leaves Several Injured"
+  ]
+}

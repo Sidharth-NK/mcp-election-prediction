@@ -1,0 +1,11 @@
+{
+  "status": "success",
+  "state": "Kerala",
+  "district": "Thiruvananthapuram",
+  "rural_percentage": 66.25,
+  "urban_percentage": 33.75,
+  "literacy_rate": 91.72,
+  "sc_st_percentage": 20.0,
+  "major_demographic_note": "Based on 2011 census data.",
+  "data_source": "Live Serper API Search"
+}

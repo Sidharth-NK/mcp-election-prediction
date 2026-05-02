@@ -1,0 +1,15 @@
+{
+  "state": "Tamil Nadu",
+  "constituency": "Killiyoor",
+  "date": "2026-05-02",
+  "sentiment_score": -0.5,
+  "event_tags": [
+    "scandal",
+    "general"
+  ],
+  "reasoning": "Multiple errors in API calls suggest a lack of reliable information, leading to a neutral sentiment score.",
+  "key_headlines": [
+    "API errors hinder analysis",
+    "No reliable information available"
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "state": "West Bengal",
+  "constituency": "Beldanga",
+  "date": "2026-05-02",
+  "sentiment_score": -0.5,
+  "event_tags": [
+    "protest",
+    "scandal"
+  ],
+  "reasoning": "The eruption of protests and violence in Beldanga, along with the death of a migrant worker, contribute to a negative sentiment.",
+  "key_headlines": [
+    "Beldanga erupts after Murshidabad worker's death in Jharkhand",
+    "Beldanga Violence Escalates, NIA Takes Over Probe After Migrant Worker's Death",
+    "High Turnout, Allegations, and Volatile Mood in Bengal Polls"
+  ]
+}

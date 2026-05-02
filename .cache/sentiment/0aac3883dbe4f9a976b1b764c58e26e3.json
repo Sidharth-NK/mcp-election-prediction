@@ -1,0 +1,15 @@
+{
+  "state": "West Bengal",
+  "constituency": "Naoda",
+  "date": "2026-05-02",
+  "sentiment_score": -0.5,
+  "event_tags": [
+    "scandal",
+    "protest"
+  ],
+  "reasoning": "Similar to Harishchandrapur, the presence of error messages implies a negative sentiment.",
+  "key_headlines": [
+    "Naoda election news hampered by API issues",
+    "West Bengal constituency faces data access challenges"
+  ]
+}

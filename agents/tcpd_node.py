@@ -1,6 +1,6 @@
 """
 TCPD Historical Node
-====================
+
 Reads real TCPD CSV data for all 5 states and provides:
   1. Single constituency lookup (for fusion layer)
   2. Full historical summary with rolling averages (for ML model + TFT)
@@ -15,7 +15,7 @@ from functools import lru_cache
 
 DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
 
-# ─── Lazy-loaded Cache ───────────────────────────────────────────────────────
+# Lazy-loaded Cache 
 _tcpd_df: Optional[pd.DataFrame] = None
 
 def _normalize_name(s: str) -> str:
@@ -90,8 +90,7 @@ def _load_all_tcpd() -> pd.DataFrame:
     _tcpd_df["Year"] = pd.to_numeric(_tcpd_df["Year"], errors="coerce")
     _tcpd_df["Position"] = pd.to_numeric(_tcpd_df["Position"], errors="coerce")
 
-    # Normalize names for matching — CRITICAL: remove underscores so
-    # 'Tamil_Nadu' and 'Tamil Nadu' both become 'tamil nadu'
+    # Normalize names for matching
     _tcpd_df["_state_norm"] = _tcpd_df["State_Name"].apply(
         lambda x: _normalize_name(str(x))
     )
@@ -120,17 +119,15 @@ def get_historical_baseline(state: str, constituency: str) -> Dict:
     c_norm = _normalize_name(constituency)
     c_norm = CONSTITUENCY_ALIASES.get(c_norm, c_norm)
 
-    # Pass 1: exact normalized match
+    # exact normalized match
     mask = (df["_state_norm"] == s_norm) & (df["_const_norm"] == c_norm)
     match = df[mask].copy()
 
-    # Pass 2: fuzzy fallback — match state exactly, then find the best
-    # constituency name that starts with or contains the query as a prefix
+    # fuzzy fallback — match state exactly, then find the best
     if match.empty:
         state_mask = df["_state_norm"] == s_norm
         state_df = df[state_mask]
         if not state_df.empty:
-            # Try prefix match: TCPD name starts with wiki name or vice versa
             best = None
             best_len = 0
             for tcpd_name in state_df["_const_norm"].unique():

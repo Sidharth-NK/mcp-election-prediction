@@ -1,0 +1,15 @@
+{
+  "state": "West Bengal",
+  "constituency": "Barabani",
+  "date": "2026-05-01",
+  "sentiment_score": 0.0,
+  "event_tags": [
+    "general"
+  ],
+  "reasoning": "No relevant information available due to API errors.",
+  "key_headlines": [
+    "No data available",
+    "API errors occurred",
+    "No news found"
+  ]
+}

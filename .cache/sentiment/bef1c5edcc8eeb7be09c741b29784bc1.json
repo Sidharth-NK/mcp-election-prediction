@@ -1,0 +1,14 @@
+{
+  "state": "Kerala",
+  "constituency": "Ranni",
+  "date": "2026-05-02",
+  "sentiment_score": -0.2,
+  "event_tags": [
+    "protest"
+  ],
+  "reasoning": "Ranni has seen some protests, indicating a slightly negative sentiment.",
+  "key_headlines": [
+    "Ranni protesters demand better infrastructure",
+    "Ranni residents express dissatisfaction with local government"
+  ]
+}

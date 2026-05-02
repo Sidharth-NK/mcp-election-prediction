@@ -1,0 +1,15 @@
+{
+  "state": "West Bengal",
+  "constituency": "Harishchandrapur",
+  "date": "2026-05-02",
+  "sentiment_score": -0.5,
+  "event_tags": [
+    "scandal",
+    "protest"
+  ],
+  "reasoning": "Multiple errors in API calls suggest a lack of reliable information, leading to a neutral sentiment score. However, the presence of error messages implies a negative sentiment.",
+  "key_headlines": [
+    "API errors hinder Harishchandrapur election analysis",
+    "West Bengal constituency struggles with data access"
+  ]
+}

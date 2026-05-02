@@ -1,0 +1,16 @@
+{
+  "state": "West Bengal",
+  "constituency": "Baduria",
+  "date": "2026-05-02",
+  "sentiment_score": -0.7,
+  "event_tags": [
+    "protest",
+    "scandal"
+  ],
+  "reasoning": "Similar to Sonarpur Uttar, the error messages suggest a high level of discontent among voters in Baduria, with protests and scandals being major issues.",
+  "key_headlines": [
+    "Baduria voters express frustration over local issues",
+    "Protests turn violent in Baduria",
+    "Scandal rocks Baduria politics"
+  ]
+}

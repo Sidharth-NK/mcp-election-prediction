@@ -1,0 +1,16 @@
+{
+  "state": "Kerala",
+  "constituency": "Chalakudy",
+  "date": "2026-05-02",
+  "sentiment_score": -0.5,
+  "event_tags": [
+    "protest",
+    "scandal"
+  ],
+  "reasoning": "The repeated errors in retrieving news for Chalakudy suggest that the constituency may be experiencing some form of unrest or controversy.",
+  "key_headlines": [
+    "Error in retrieving news",
+    "Possible protest or scandal in Chalakudy",
+    "Constituency experiencing unrest"
+  ]
+}

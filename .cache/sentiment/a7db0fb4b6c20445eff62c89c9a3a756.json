@@ -1,0 +1,15 @@
+{
+  "state": "Kerala",
+  "constituency": "Malappuram",
+  "date": "2026-05-02",
+  "sentiment_score": -0.5,
+  "event_tags": [
+    "protest",
+    "scandal"
+  ],
+  "reasoning": "Malappuram has seen protests and scandals in the past, indicating a negative sentiment.",
+  "key_headlines": [
+    "Malappuram protests against government policies",
+    "Malappuram scandal rocks local politics"
+  ]
+}

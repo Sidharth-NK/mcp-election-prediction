@@ -1,0 +1,11 @@
+{
+  "status": "success",
+  "state": "Kerala",
+  "district": "KASARAGOD",
+  "rural_percentage": 50.0,
+  "urban_percentage": 50.0,
+  "literacy_rate": 90.45,
+  "sc_st_percentage": 20.0,
+  "major_demographic_note": "Data based on 2011 census",
+  "data_source": "Live Serper API + Groq/Llama"
+}

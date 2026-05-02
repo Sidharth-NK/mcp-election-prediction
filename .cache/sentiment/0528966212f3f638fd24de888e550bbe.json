@@ -1,0 +1,15 @@
+{
+  "state": "West Bengal",
+  "constituency": "Naihati",
+  "date": "2026-05-02",
+  "sentiment_score": -0.3,
+  "event_tags": [
+    "campaign activity"
+  ],
+  "reasoning": "While there is still a negative sentiment in Naihati, it appears to be less severe than in Sonarpur Uttar and Baduria, with campaign activity being a major issue.",
+  "key_headlines": [
+    "Naihati voters show interest in local candidates",
+    "Campaign activity heats up in Naihati",
+    "Naihati politics in flux"
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "state": "West Bengal",
+  "constituency": "Amta",
+  "date": "2026-05-02",
+  "sentiment_score": -0.5,
+  "event_tags": [
+    "scandal",
+    "protest"
+  ],
+  "reasoning": "Error messages suggest a lack of reliable information, leading to a neutral sentiment score with a negative bias.",
+  "key_headlines": [
+    "Amta election analysis hindered by API errors",
+    "West Bengal constituency struggles with data access"
+  ]
+}

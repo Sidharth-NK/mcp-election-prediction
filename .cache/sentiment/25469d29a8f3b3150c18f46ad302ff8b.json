@@ -1,0 +1,16 @@
+{
+  "state": "West Bengal",
+  "constituency": "Medinipur",
+  "date": "2026-05-02",
+  "sentiment_score": -0.2,
+  "event_tags": [
+    "protest",
+    "scandal"
+  ],
+  "reasoning": "Reports of violence and clashes on the final day of campaigning indicate a negative sentiment in the constituency.",
+  "key_headlines": [
+    "Violence Was Reported in Paschim Medinipur on the Final Day of Campaigning",
+    "West Bengal Polls: 'Clashes in Paschim Medinipur' Ahead of Phase-I Voting",
+    "Speculations in Midnapore Regarding Activity of Suvendu Adhikari"
+  ]
+}

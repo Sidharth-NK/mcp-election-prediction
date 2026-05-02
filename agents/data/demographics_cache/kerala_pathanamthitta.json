@@ -1,0 +1,11 @@
+{
+  "status": "fallback",
+  "state": "Kerala",
+  "district": "PATHANAMTHITTA",
+  "rural_percentage": 50.0,
+  "urban_percentage": 50.0,
+  "literacy_rate": 75.0,
+  "sc_st_percentage": 20.0,
+  "major_demographic_note": "Fallback used due to error: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kqfv8wy6fsavnv0axrn72scx` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 99891, Requested 1113. Please try again in 14m27.456s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
+  "data_source": "Heuristic Fallback"
+}

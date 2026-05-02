@@ -1,0 +1,11 @@
+{
+  "status": "success",
+  "state": "Assam",
+  "district": "HOJAI",
+  "rural_percentage": 18.5,
+  "urban_percentage": 81.5,
+  "literacy_rate": 90.66,
+  "sc_st_percentage": 0.0,
+  "major_demographic_note": "No specific year mentioned",
+  "data_source": "Live Serper API + Groq/Llama"
+}

@@ -23,10 +23,8 @@ except Exception as e:
     groq_client = None
     print(f"CRITICAL: Groq client failed — {e}")
 
-# ============================================================
-# SCHEMAS for Mathematical Extraction
-# ============================================================
 
+# SCHEMAS for Mathematical Extraction
 class PartyMath(BaseModel):
     party: str = Field(description="Abbreviation of the party or alliance (e.g., LDF, UDF, NDA, DMK, AIADMK).")
     projected_vote_share_percentage: Optional[float] = Field(default=None, description="The projected vote share percentage (e.g., 42.5). Use null if unknown.")
@@ -41,10 +39,8 @@ class PollingOutput(BaseModel):
     projected_winner: Optional[str] = Field(default=None, description="Party or Alliance projected to win. Use null if unknown.")
     parties: List[PartyMath] = Field(description="Mathematical breakdown per party/alliance.")
 
-# ============================================================
-# TAVILY SEARCH (Targeted at Survey Agencies)
-# ============================================================
 
+# TAVILY SEARCH (Targeted at Survey Agencies)
 async def _tavily_poll_search(query: str) -> str:
     """Async Tavily search tailored for polling numbers."""
     try:
@@ -79,10 +75,8 @@ async def fetch_polling_data(state: str) -> str:
     results = await asyncio.gather(*[_tavily_poll_search(q) for q in queries])
     return "\n".join(results)
 
-# ============================================================
-# GROQ SYNTHESIS (Llama 3.3 70B, Zero Temperature)
-# ============================================================
 
+# GROQ SYNTHESIS (Llama 3.3 70B, Zero Temperature)
 async def analyze_polling_data(state: str) -> Dict:
     """
     Scrapes the latest poll data via Tavily and extracts hard numbers using Groq.
@@ -129,7 +123,7 @@ Return a JSON object with these exact keys:
     raw = json.loads(response.choices[0].message.content)
     output = PollingOutput(**raw)
     
-    # --- PYTHON MATH VALIDATION LAYER ---
+    # PYTHON MATH VALIDATION LAYER 
     total_vote_share = sum(p.projected_vote_share_percentage for p in output.parties if p.projected_vote_share_percentage is not None)
     
     # If the LLM hallucinated numbers exceeding 100% significantly, normalize them to preserve the signal ratio
