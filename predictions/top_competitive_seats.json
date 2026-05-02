@@ -6,7 +6,7 @@
     "last_election_year":2021,
     "winner_2021":"BOPF",
     "runner_up_2021":"UPPL",
-    "predicted_winner_party_2026":"BPF",
+    "predicted_winner_party_2026":"OTHER Candidate",
     "winning_margin_pct":7.74,
     "rolling_avg_margin":23.38,
     "voter_turnout_pct":84.93,
@@ -24,13 +24,13 @@
     "alliances_2026":"NDA",
     "swing_index":0.42,
     "competitiveness":10.0,
-    "predicted_outcome":"SAFE HOLD",
-    "prediction_confidence":"HIGH",
+    "predicted_outcome":"SWING \/ FLIP",
+    "prediction_confidence":"MODERATE",
     "prediction_basis":"Historical TCPD + ML Risk Model + Gemini Live Sentiment",
     "_alliance_2021":"NDA",
     "_alliance_runner":"NDA",
-    "swing_applied":false,
-    "_vulnerability":null
+    "_vulnerability":20.38,
+    "swing_applied":true
   },
   {
     "state":"Kerala",
@@ -54,7 +54,7 @@
     "sc_st_pct":20.0,
     "n_candidates_2026":3,
     "parties_2026":"CPI(M), IUML, BJP",
-    "alliances_2026":"LDF, UDF, NDA",
+    "alliances_2026":"NDA, UDF, LDF",
     "swing_index":10.0,
     "competitiveness":10.0,
     "predicted_outcome":"TOSS-UP \/ POSSIBLE FLIP",
@@ -62,8 +62,8 @@
     "prediction_basis":"Historical TCPD + ML Risk Model + Gemini Live Sentiment",
     "_alliance_2021":"UDF",
     "_alliance_runner":"NDA",
-    "swing_applied":false,
-    "_vulnerability":null
+    "_vulnerability":null,
+    "swing_applied":false
   },
   {
     "state":"West Bengal",
@@ -72,7 +72,7 @@
     "last_election_year":2021,
     "winner_2021":"AITC",
     "runner_up_2021":"BJP",
-    "predicted_winner_party_2026":"AITC",
+    "predicted_winner_party_2026":"BJP",
     "winning_margin_pct":1.09,
     "rolling_avg_margin":8.62,
     "voter_turnout_pct":88.58,
@@ -90,13 +90,13 @@
     "alliances_2026":"N\/A",
     "swing_index":1.1,
     "competitiveness":10.0,
-    "predicted_outcome":"LIKELY HOLD",
+    "predicted_outcome":"SWING \/ FLIP",
     "prediction_confidence":"MODERATE",
     "prediction_basis":"Historical TCPD + ML Risk Model + Gemini Live Sentiment",
     "_alliance_2021":"TMC",
     "_alliance_runner":"BJP+",
-    "swing_applied":false,
-    "_vulnerability":null
+    "_vulnerability":5.62,
+    "swing_applied":true
   },
   {
     "state":"Assam",
@@ -105,7 +105,7 @@
     "last_election_year":2021,
     "winner_2021":"UPPL",
     "runner_up_2021":"BOPF",
-    "predicted_winner_party_2026":"UPPL",
+    "predicted_winner_party_2026":"OTHER Candidate",
     "winning_margin_pct":21.02,
     "rolling_avg_margin":23.32,
     "voter_turnout_pct":79.25,
@@ -123,13 +123,13 @@
     "alliances_2026":"",
     "swing_index":0.42,
     "competitiveness":9.86,
-    "predicted_outcome":"SAFE HOLD",
-    "prediction_confidence":"HIGH",
+    "predicted_outcome":"SWING \/ FLIP",
+    "prediction_confidence":"MODERATE",
     "prediction_basis":"Historical TCPD + ML Risk Model + Gemini Live Sentiment",
     "_alliance_2021":"NDA",
     "_alliance_runner":"NDA",
-    "swing_applied":false,
-    "_vulnerability":null
+    "_vulnerability":20.32,
+    "swing_applied":true
   },
   {
     "state":"Assam",
@@ -138,7 +138,7 @@
     "last_election_year":2021,
     "winner_2021":"BJP",
     "runner_up_2021":"AJP",
-    "predicted_winner_party_2026":"BJP",
+    "predicted_winner_party_2026":"AJP",
     "winning_margin_pct":9.47,
     "rolling_avg_margin":22.49,
     "voter_turnout_pct":85.88,
@@ -156,13 +156,13 @@
     "alliances_2026":"",
     "swing_index":0.43,
     "competitiveness":9.7,
-    "predicted_outcome":"SAFE HOLD",
-    "prediction_confidence":"HIGH",
+    "predicted_outcome":"SWING \/ FLIP",
+    "prediction_confidence":"MODERATE",
     "prediction_basis":"Historical TCPD + ML Risk Model + Gemini Live Sentiment",
     "_alliance_2021":"NDA",
     "_alliance_runner":"OTHER",
-    "swing_applied":false,
-    "_vulnerability":null
+    "_vulnerability":19.49,
+    "swing_applied":true
   },
   {
     "state":"West Bengal",
@@ -194,8 +194,8 @@
     "prediction_basis":"Historical TCPD + ML Risk Model + Gemini Live Sentiment",
     "_alliance_2021":"BJP+",
     "_alliance_runner":"TMC",
-    "swing_applied":false,
-    "_vulnerability":null
+    "_vulnerability":null,
+    "swing_applied":false
   },
   {
     "state":"Assam",
@@ -204,7 +204,7 @@
     "last_election_year":2021,
     "winner_2021":"INC",
     "runner_up_2021":"BJP",
-    "predicted_winner_party_2026":"INC",
+    "predicted_winner_party_2026":"BJP+ Candidate",
     "winning_margin_pct":11.96,
     "rolling_avg_margin":11.96,
     "voter_turnout_pct":85.71,
@@ -222,13 +222,13 @@
     "alliances_2026":"",
     "swing_index":0.8,
     "competitiveness":8.95,
-    "predicted_outcome":"LIKELY HOLD",
+    "predicted_outcome":"SWING \/ FLIP",
     "prediction_confidence":"MODERATE",
     "prediction_basis":"Historical TCPD + ML Risk Model + Gemini Live Sentiment",
     "_alliance_2021":"UPA",
     "_alliance_runner":"NDA",
-    "swing_applied":false,
-    "_vulnerability":null
+    "_vulnerability":8.96,
+    "swing_applied":true
   },
   {
     "state":"Assam",
@@ -237,7 +237,7 @@
     "last_election_year":2021,
     "winner_2021":"BJP",
     "runner_up_2021":"INC",
-    "predicted_winner_party_2026":"BJP",
+    "predicted_winner_party_2026":"BJP+ Candidate",
     "winning_margin_pct":23.34,
     "rolling_avg_margin":20.08,
     "voter_turnout_pct":81.92,
@@ -255,13 +255,13 @@
     "alliances_2026":"",
     "swing_index":0.49,
     "competitiveness":8.84,
-    "predicted_outcome":"SAFE HOLD",
-    "prediction_confidence":"HIGH",
+    "predicted_outcome":"SWING \/ FLIP",
+    "prediction_confidence":"MODERATE",
     "prediction_basis":"Historical TCPD + ML Risk Model + Gemini Live Sentiment",
     "_alliance_2021":"NDA",
     "_alliance_runner":"UPA",
-    "swing_applied":false,
-    "_vulnerability":null
+    "_vulnerability":17.08,
+    "swing_applied":true
   },
   {
     "state":"Assam",
@@ -270,7 +270,7 @@
     "last_election_year":2021,
     "winner_2021":"BJP",
     "runner_up_2021":"INC",
-    "predicted_winner_party_2026":"BJP",
+    "predicted_winner_party_2026":"BJP+ Candidate",
     "winning_margin_pct":14.76,
     "rolling_avg_margin":16.29,
     "voter_turnout_pct":83.33,
@@ -288,13 +288,13 @@
     "alliances_2026":"",
     "swing_index":0.6,
     "competitiveness":8.28,
-    "predicted_outcome":"SAFE HOLD",
-    "prediction_confidence":"HIGH",
+    "predicted_outcome":"SWING \/ FLIP",
+    "prediction_confidence":"MODERATE",
     "prediction_basis":"Historical TCPD + ML Risk Model + Gemini Live Sentiment",
     "_alliance_2021":"NDA",
     "_alliance_runner":"UPA",
-    "swing_applied":false,
-    "_vulnerability":null
+    "_vulnerability":13.29,
+    "swing_applied":true
   },
   {
     "state":"Assam",
@@ -303,7 +303,7 @@
     "last_election_year":2021,
     "winner_2021":"BJP",
     "runner_up_2021":"INC",
-    "predicted_winner_party_2026":"BJP",
+    "predicted_winner_party_2026":"BJP+ Candidate",
     "winning_margin_pct":5.65,
     "rolling_avg_margin":18.29,
     "voter_turnout_pct":81.53,
@@ -321,13 +321,13 @@
     "alliances_2026":"",
     "swing_index":0.53,
     "competitiveness":8.27,
-    "predicted_outcome":"SAFE HOLD",
-    "prediction_confidence":"HIGH",
+    "predicted_outcome":"SWING \/ FLIP",
+    "prediction_confidence":"MODERATE",
     "prediction_basis":"Historical TCPD + ML Risk Model + Gemini Live Sentiment",
     "_alliance_2021":"NDA",
     "_alliance_runner":"UPA",
-    "swing_applied":false,
-    "_vulnerability":null
+    "_vulnerability":15.29,
+    "swing_applied":true
   },
   {
     "state":"Assam",
@@ -336,7 +336,7 @@
     "last_election_year":2006,
     "winner_2021":"INC",
     "runner_up_2021":"CPI",
-    "predicted_winner_party_2026":"INC",
+    "predicted_winner_party_2026":"BJP+ Candidate",
     "winning_margin_pct":7.51,
     "rolling_avg_margin":16.37,
     "voter_turnout_pct":78.21,
@@ -354,13 +354,13 @@
     "alliances_2026":"",
     "swing_index":0.59,
     "competitiveness":8.19,
-    "predicted_outcome":"SAFE HOLD",
-    "prediction_confidence":"HIGH",
+    "predicted_outcome":"SWING \/ FLIP",
+    "prediction_confidence":"MODERATE",
     "prediction_basis":"Historical TCPD + ML Risk Model + Gemini Live Sentiment",
     "_alliance_2021":"UPA",
     "_alliance_runner":"UPA",
-    "swing_applied":false,
-    "_vulnerability":null
+    "_vulnerability":13.37,
+    "swing_applied":true
   },
   {
     "state":"Assam",
@@ -369,7 +369,7 @@
     "last_election_year":2021,
     "winner_2021":"BJP",
     "runner_up_2021":"INC",
-    "predicted_winner_party_2026":"BJP",
+    "predicted_winner_party_2026":"OTHER Candidate",
     "winning_margin_pct":20.78,
     "rolling_avg_margin":29.36,
     "voter_turnout_pct":85.16,
@@ -387,13 +387,13 @@
     "alliances_2026":"NDA",
     "swing_index":0.33,
     "competitiveness":8.18,
-    "predicted_outcome":"SAFE HOLD",
-    "prediction_confidence":"HIGH",
+    "predicted_outcome":"SWING \/ FLIP",
+    "prediction_confidence":"MODERATE",
     "prediction_basis":"Historical TCPD + ML Risk Model + Gemini Live Sentiment",
     "_alliance_2021":"NDA",
     "_alliance_runner":"UPA",
-    "swing_applied":false,
-    "_vulnerability":null
+    "_vulnerability":26.36,
+    "swing_applied":true
   },
   {
     "state":"West Bengal",
@@ -425,8 +425,8 @@
     "prediction_basis":"Historical TCPD + ML Risk Model + Gemini Live Sentiment",
     "_alliance_2021":"BJP+",
     "_alliance_runner":"TMC",
-    "swing_applied":false,
-    "_vulnerability":null
+    "_vulnerability":null,
+    "swing_applied":false
   },
   {
     "state":"West Bengal",
@@ -435,7 +435,7 @@
     "last_election_year":2021,
     "winner_2021":"AITC",
     "runner_up_2021":"BJP",
-    "predicted_winner_party_2026":"AITC",
+    "predicted_winner_party_2026":"BJP",
     "winning_margin_pct":26.87,
     "rolling_avg_margin":11.18,
     "voter_turnout_pct":78.82,
@@ -453,13 +453,13 @@
     "alliances_2026":"N\/A",
     "swing_index":0.86,
     "competitiveness":8.05,
-    "predicted_outcome":"LIKELY HOLD",
+    "predicted_outcome":"SWING \/ FLIP",
     "prediction_confidence":"MODERATE",
     "prediction_basis":"Historical TCPD + ML Risk Model + Gemini Live Sentiment",
     "_alliance_2021":"TMC",
     "_alliance_runner":"BJP+",
-    "swing_applied":false,
-    "_vulnerability":null
+    "_vulnerability":8.18,
+    "swing_applied":true
   },
   {
     "state":"Assam",
@@ -468,7 +468,7 @@
     "last_election_year":2021,
     "winner_2021":"INC",
     "runner_up_2021":"AGP",
-    "predicted_winner_party_2026":"INC",
+    "predicted_winner_party_2026":"BJP+ Candidate",
     "winning_margin_pct":25.58,
     "rolling_avg_margin":18.26,
     "voter_turnout_pct":86.7,
@@ -486,13 +486,13 @@
     "alliances_2026":"ASOM",
     "swing_index":0.53,
     "competitiveness":8.04,
-    "predicted_outcome":"SAFE HOLD",
-    "prediction_confidence":"HIGH",
+    "predicted_outcome":"SWING \/ FLIP",
+    "prediction_confidence":"MODERATE",
     "prediction_basis":"Historical TCPD + ML Risk Model + Gemini Live Sentiment",
     "_alliance_2021":"UPA",
     "_alliance_runner":"NDA",
-    "swing_applied":false,
-    "_vulnerability":null
+    "_vulnerability":15.26,
+    "swing_applied":true
   },
   {
     "state":"Puducherry",
@@ -524,8 +524,8 @@
     "prediction_basis":"Historical TCPD + ML Risk Model + Gemini Live Sentiment",
     "_alliance_2021":"NDA",
     "_alliance_runner":"DMK+",
-    "swing_applied":false,
-    "_vulnerability":null
+    "_vulnerability":null,
+    "swing_applied":false
   },
   {
     "state":"Assam",
@@ -534,7 +534,7 @@
     "last_election_year":2021,
     "winner_2021":"BJP",
     "runner_up_2021":"INC",
-    "predicted_winner_party_2026":"BJP",
+    "predicted_winner_party_2026":"BJP+ Candidate",
     "winning_margin_pct":12.05,
     "rolling_avg_margin":21.76,
     "voter_turnout_pct":83.33,
@@ -552,13 +552,13 @@
     "alliances_2026":"",
     "swing_index":0.45,
     "competitiveness":7.97,
-    "predicted_outcome":"SAFE HOLD",
-    "prediction_confidence":"HIGH",
+    "predicted_outcome":"SWING \/ FLIP",
+    "prediction_confidence":"MODERATE",
     "prediction_basis":"Historical TCPD + ML Risk Model + Gemini Live Sentiment",
     "_alliance_2021":"NDA",
     "_alliance_runner":"UPA",
-    "swing_applied":false,
-    "_vulnerability":null
+    "_vulnerability":18.76,
+    "swing_applied":true
   },
   {
     "state":"Assam",
@@ -567,7 +567,7 @@
     "last_election_year":2021,
     "winner_2021":"BJP",
     "runner_up_2021":"INC",
-    "predicted_winner_party_2026":"BJP",
+    "predicted_winner_party_2026":"BJP+ Candidate",
     "winning_margin_pct":8.38,
     "rolling_avg_margin":18.38,
     "voter_turnout_pct":79.48,
@@ -585,13 +585,13 @@
     "alliances_2026":"NDA",
     "swing_index":0.53,
     "competitiveness":7.95,
-    "predicted_outcome":"SAFE HOLD",
-    "prediction_confidence":"HIGH",
+    "predicted_outcome":"SWING \/ FLIP",
+    "prediction_confidence":"MODERATE",
     "prediction_basis":"Historical TCPD + ML Risk Model + Gemini Live Sentiment",
     "_alliance_2021":"NDA",
     "_alliance_runner":"UPA",
-    "swing_applied":false,
-    "_vulnerability":null
+    "_vulnerability":15.38,
+    "swing_applied":true
   },
   {
     "state":"Assam",
@@ -600,7 +600,7 @@
     "last_election_year":2021,
     "winner_2021":"AGP",
     "runner_up_2021":"INC",
-    "predicted_winner_party_2026":"AGP",
+    "predicted_winner_party_2026":"BJP+ Candidate",
     "winning_margin_pct":9.39,
     "rolling_avg_margin":17.82,
     "voter_turnout_pct":76.47,
@@ -618,13 +618,13 @@
     "alliances_2026":"",
     "swing_index":0.55,
     "competitiveness":7.9,
-    "predicted_outcome":"SAFE HOLD",
-    "prediction_confidence":"HIGH",
+    "predicted_outcome":"SWING \/ FLIP",
+    "prediction_confidence":"MODERATE",
     "prediction_basis":"Historical TCPD + ML Risk Model + Gemini Live Sentiment",
     "_alliance_2021":"NDA",
     "_alliance_runner":"UPA",
-    "swing_applied":false,
-    "_vulnerability":null
+    "_vulnerability":14.82,
+    "swing_applied":true
   },
   {
     "state":"Assam",
@@ -633,7 +633,7 @@
     "last_election_year":2021,
     "winner_2021":"BJP",
     "runner_up_2021":"INC",
-    "predicted_winner_party_2026":"BJP",
+    "predicted_winner_party_2026":"BJP+ Candidate",
     "winning_margin_pct":27.4,
     "rolling_avg_margin":17.1,
     "voter_turnout_pct":86.77,
@@ -651,12 +651,12 @@
     "alliances_2026":"NDA",
     "swing_index":0.57,
     "competitiveness":7.9,
-    "predicted_outcome":"SAFE HOLD",
-    "prediction_confidence":"HIGH",
+    "predicted_outcome":"SWING \/ FLIP",
+    "prediction_confidence":"MODERATE",
     "prediction_basis":"Historical TCPD + ML Risk Model + Gemini Live Sentiment",
     "_alliance_2021":"NDA",
     "_alliance_runner":"UPA",
-    "swing_applied":false,
-    "_vulnerability":null
+    "_vulnerability":14.1,
+    "swing_applied":true
   }
 ]

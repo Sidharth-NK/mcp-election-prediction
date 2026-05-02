@@ -13,7 +13,7 @@ load_dotenv()
 GROQ_API_KEY    = os.getenv("GROQ_API_KEY")
 TAVILY_API_KEY  = os.getenv("TAVILY_API_KEY")
 TAVILY_URL = "https://api.tavily.com/search"
-GROQ_MODEL = "llama-3.3-70b-versatile"
+GROQ_MODEL = "llama-3.1-8b-instant"
 
 try:
     if not GROQ_API_KEY:
